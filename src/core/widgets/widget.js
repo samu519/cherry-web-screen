@@ -145,13 +145,15 @@ export class Widget {
        CAMBIAR LAYOUT
        ===================================================== */
 
-    setLayout(layout) {
+   setLayout(layout) {
 
-        this.layout = {
-            ...this.layout,
-            ...layout
-        };
-    }
+    this.layout = {
+        ...this.layout,
+        ...layout
+    };
+
+    return this.layout;
+}
 
 
     /* =====================================================

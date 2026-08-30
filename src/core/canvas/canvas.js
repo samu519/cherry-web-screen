@@ -3,7 +3,7 @@
    Contenedor y administrador de widgets
    ========================================================= */
 
-import { Grid } from "./layout/Grid.js";
+import { Grid } from "../layouts/grid.js";
 
 
 export class Canvas {
