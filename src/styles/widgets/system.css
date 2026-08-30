@@ -1,0 +1,41 @@
+/* =========================================================
+   CHERRY — SYSTEM WIDGET
+   ========================================================= */
+
+.cherry-system {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--cherry-space-md);
+    width: 100%;
+    height: 100%;
+    align-content: center;
+}
+
+.cherry-system-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--cherry-space-2xs);
+    min-height: 72px;
+    padding: var(--cherry-space-sm);
+    border-radius: var(--cherry-radius-medium);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    text-align: center;
+}
+
+.cherry-system-metric-name {
+    font-size: var(--cherry-font-size-xs);
+    font-weight: var(--cherry-weight-medium);
+    color: var(--cherry-text-secondary);
+    letter-spacing: var(--cherry-tracking-wide);
+    text-transform: uppercase;
+}
+
+.cherry-system-metric-value {
+    font-size: clamp(18px, 7cqw, 28px);
+    font-weight: var(--cherry-weight-bold);
+    color: var(--cherry-text-primary);
+    line-height: 1.1;
+}

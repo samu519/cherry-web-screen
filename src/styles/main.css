@@ -3,7 +3,20 @@
    Componentes y estructura visual
    ========================================================= */
 
+@import "./variables.css";
 
+@import "./base/reset.css";
+
+@import "./layout/canvas.css";
+@import "./layout/grid.css";
+
+@import "./widgets/widget.css";
+@import "./widgets/clock.css";
+@import "./widgets/media.css";
+@import "./widgets/controls.css";
+@import "./widgets/system.css";
+@import "./widgets/visual.css";
+@import "./widgets/text.css";
 /* ---------------------------------------------------------
    1. RESET
    --------------------------------------------------------- */
@@ -43,7 +56,20 @@ body {
 
     overflow: hidden;
 
-    background: var(--cherry-white);
+    background:  
+        radial-gradient(
+            circle at 20% 15%,
+            rgba(59, 131, 246, 0.61),
+            transparent 35%
+        ),
+
+        radial-gradient(
+            circle at 85% 70%,
+            rgba(96, 165, 250, 0.534),
+            transparent 40%
+        ),
+
+        #f4f6f9;
 }
 
 
@@ -51,173 +77,73 @@ body {
    3. BASE WIDGET
    --------------------------------------------------------- */
 
+.cherry-widget > * {
+    box-sizing: border-box;
+}
 .cherry-widget {
+
     position: absolute;
 
-    overflow: hidden;
+    box-sizing: border-box;
 
-    user-select: none;
-}
+    padding:
+        var(--cherry-widget-padding);
 
-
-/* ---------------------------------------------------------
-   4. CLOCK
-   --------------------------------------------------------- */
-
-.cherry-clock {
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    flex-direction: column;
-
-    color: var(--cherry-text-primary);
-
-    font-size: var(--cherry-font-size-clock);
-    font-weight: var(--cherry-weight-bold);
-
-    letter-spacing: -3px;
-}
-
-.cherry-clock-date {
-    margin-top: var(--cherry-space-sm);
-
-    font-size: var(--cherry-font-size-lg);
-    font-weight: var(--cherry-weight-medium);
-
-    letter-spacing: -0.5px;
-
-    color: var(--cherry-text-secondary);
-}
-
-
-/* ---------------------------------------------------------
-   5. MEDIA
-   --------------------------------------------------------- */
-
-.cherry-media {
-    display: flex;
-
-    flex-direction: column;
-
-    padding: var(--cherry-widget-padding);
-
-    border-radius: var(--cherry-radius-xl);
-
-    background: var(--cherry-glass-dark);
-
-    color: var(--cherry-white);
-
-    backdrop-filter: blur(var(--cherry-blur-medium));
-    -webkit-backdrop-filter: blur(var(--cherry-blur-medium));
-
-    box-shadow: var(--cherry-shadow-medium);
-}
-
-.cherry-media-artwork {
-    width: 100%;
-
-    aspect-ratio: 1 / 1;
-
-    object-fit: cover;
-
-    border-radius: var(--cherry-radius-large);
-
-    margin-bottom: var(--cherry-space-xl);
-}
-
-.cherry-media-info {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: var(--cherry-space-xs);
-}
-
-.cherry-media-title {
-    font-size: 25px;
-    font-weight: var(--cherry-weight-bold);
-
-    letter-spacing: -0.8px;
-}
-
-.cherry-media-artist {
-    font-size: var(--cherry-font-size-md);
-    font-weight: var(--cherry-weight-regular);
-
-    color: rgba(255, 255, 255, 0.65);
-}
-
-.cherry-media-progress {
-    width: 100%;
-    height: 5px;
-
-    margin-top: var(--cherry-space-xl);
+    border-radius:
+        var(--cherry-widget-radius);
 
     overflow: hidden;
 
-    border-radius: var(--cherry-radius-pill);
-
-    background: rgba(255, 255, 255, 0.18);
+    transition:
+        var(--cherry-transition-normal);
 }
 
-.cherry-media-progress-bar {
-    height: 100%;
+.cherry-widget[data-widget-variant="translucid"] {
 
-    border-radius: inherit;
+    background:
+        var(--cherry-translucid-background);
 
-    background: var(--cherry-blue);
+    border:
+        1px solid
+        var(--cherry-translucid-border);
 
-    transition: width var(--cherry-transition-normal);
+    box-shadow:
+        var(--cherry-translucid-shadow);
+}
+/* =========================================================
+   TRANSLUCID
+   ========================================================= */
+
+.cherry-widget[data-widget-variant="translucid"] {
+
+    background:
+        var(--cherry-translucid-background);
+
+    border:
+        1px solid var(--cherry-translucid-border);
+
+    box-shadow:
+        var(--cherry-translucid-shadow);
 }
 
-.cherry-media-controls {
-    display: flex;
 
-    align-items: center;
-    justify-content: center;
+/* =========================================================
+   SOLID
+   ========================================================= */
 
-    gap: var(--cherry-space-2xl);
+.cherry-widget[data-widget-variant="solid"] {
 
-    margin-top: var(--cherry-space-xl);
+    background:
+        var(--cherry-solid-background);
+
+    border:
+        1px solid var(--cherry-solid-border);
+
+    box-shadow:
+        var(--cherry-solid-shadow);
 }
 
-.cherry-media-controls button {
-    border: none;
 
-    background: transparent;
-
-    color: var(--cherry-white);
-
-    font-size: 22px;
-
-    cursor: pointer;
-
-    transition: transform var(--cherry-transition-fast);
-}
-
-.cherry-media-controls button:active {
-    transform: scale(0.92);
-}
-
-.cherry-media-controls button:nth-child(2) {
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    width: 52px;
-    height: 52px;
-
-    border-radius: 50%;
-
-    background: var(--cherry-white);
-
-    color: var(--cherry-black);
-
-    font-size: var(--cherry-font-size-md);
-}
 
 
 /* ---------------------------------------------------------
@@ -274,7 +200,17 @@ body {
 
     color: var(--cherry-text-primary);
 }
+/* =========================================================
+   WIDGET SIZES
+   ========================================================= */
 
+.cherry-widget[data-widget-size="small"] {
+    /* El tamaño real lo determina Grid */
+}
+
+.cherry-widget[data-widget-size="medium"] {
+    /* El tamaño real lo determina Grid */
+}
 
 /* ---------------------------------------------------------
    7. CONTROLS

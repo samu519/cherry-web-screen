@@ -1,0 +1,71 @@
+/* =========================================================
+   CHERRY — BASE RESET
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body,
+main,
+section,
+article,
+header,
+footer,
+nav,
+div,
+span,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+ol,
+li,
+button,
+input,
+img,
+video {
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    font-family: var(--cherry-font-family);
+    background: var(--cherry-background);
+    color: var(--cherry-text-primary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+video {
+    display: block;
+    max-width: 100%;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+input[type="range"] {
+    width: 100%;
+}

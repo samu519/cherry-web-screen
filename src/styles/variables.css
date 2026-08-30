@@ -200,8 +200,9 @@
 
     --cherry-canvas-width: 480px;
     --cherry-canvas-height: 1920px;
-
+    --cherry-canvas-padding: 16px;
     --cherry-canvas-radius: 0;
+    --cherry-grid-gap: 16px;
 
 
     /* =====================================================
@@ -218,7 +219,32 @@
 
     --cherry-widget-border:
         1px solid rgba(255, 255, 255, 0.18);
+        /* =====================================================
+       12.1 WIDGET VARIANTS
+       ===================================================== */
 
+    /* Translucid — estilo MVP */
+
+    --cherry-translucid-background:
+        rgba(255, 255, 255, 0.384);
+
+    --cherry-translucid-border:
+        rgba(255, 255, 255, 0.65);
+
+    --cherry-translucid-shadow:
+        0 8px 30px rgba(20, 30, 50, 0.10);
+
+
+    /* Solid — estilo alternativo */
+
+    --cherry-solid-background:
+        var(--cherry-white);
+
+    --cherry-solid-border:
+        var(--cherry-gray-200);
+
+    --cherry-solid-shadow:
+        var(--cherry-shadow-xs);
 
     /* =====================================================
        13. CONTROLS
@@ -253,6 +279,8 @@
 
     --cherry-media-radius:
         var(--cherry-radius-xl);
+    --cherry-media-artwork-background:
+        "../../assets/media/portada.png";
 
     --cherry-media-artwork-radius:
         var(--cherry-radius-large);
@@ -261,6 +289,7 @@
         rgba(20, 20, 24, 0.58);
 
     --cherry-media-progress-height: 5px;
+    
 
 
     /* =====================================================

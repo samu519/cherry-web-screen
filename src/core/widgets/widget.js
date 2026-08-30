@@ -1,5 +1,6 @@
 /* =========================================================
    CHERRY — BASE WIDGET
+
    Clase madre de todos los widgets
    ========================================================= */
 
@@ -28,7 +29,6 @@ export class Widget {
 
             column: 0,
             row: 0,
-
             columns: 1,
             rows: 1,
 
@@ -37,7 +37,28 @@ export class Widget {
 
 
         /* -------------------------------------------------
+           TAMAÑO
+           ------------------------------------------------- */
+
+        this.size =
+            config.size ??
+            "small";
+        this.sizePresets = config.sizePresets ?? {}
+
+        /* -------------------------------------------------
+           VARIANTE VISUAL
+           ------------------------------------------------- */
+
+        this.variant =
+            config.variant ??
+            "translucid";
+        this.style =
+            config.style ??
+            "default";    
+
+        /* -------------------------------------------------
            GEOMETRÍA REAL
+
            La calcula Canvas/Grid
            ------------------------------------------------- */
 
@@ -45,17 +66,17 @@ export class Widget {
 
             x: 0,
             y: 0,
-
             width: 0,
             height: 0
         };
 
 
         /* -------------------------------------------------
-           CONFIGURACIÓN DEL WIDGET
+           CONFIGURACIÓN
            ------------------------------------------------- */
 
         this.settings = {
+
             ...config.settings
         };
 
@@ -65,6 +86,7 @@ export class Widget {
            ------------------------------------------------- */
 
         this.state = {
+
             ...config.state
         };
 
@@ -96,7 +118,17 @@ export class Widget {
         element.dataset.widgetType =
             this.type;
 
-        this.element = element;
+        element.dataset.widgetSize =
+            this.size;
+
+        element.dataset.widgetVariant =
+            this.variant;
+
+        element.dataset.widgetStyle =
+            this.style;
+
+        this.element =
+            element;
 
         return element;
     }
@@ -109,6 +141,7 @@ export class Widget {
     setGeometry(geometry) {
 
         this.geometry = {
+
             ...this.geometry,
             ...geometry
         };
@@ -145,15 +178,109 @@ export class Widget {
        CAMBIAR LAYOUT
        ===================================================== */
 
-   setLayout(layout) {
+    setLayout(layout) {
+
+        this.layout = {
+
+            ...this.layout,
+            ...layout
+        };
+
+        return this.layout;
+    }
+    /* =====================================================
+   CAMBIAR ESTILO
+   ===================================================== */
+
+    setStyle(style) {
+
+        this.style =
+            style;
+
+        if (this.element) {
+
+         this.element.dataset.widgetStyle =
+            this.style;
+        }
+
+        return this.style;
+    }
+
+/* =====================================================
+   CAMBIAR TAMAÑO
+   ===================================================== */
+
+setSize(size) {
+
+    const preset =
+        this.sizePresets[size];
+
+    if (!preset) {
+
+        console.warn(
+            `Cherry: size "${size}" no está definido para ${this.type}`
+        );
+
+        return false;
+    }
+
+
+    /* ---------------------------------------------
+       Guardar tamaño
+       --------------------------------------------- */
+
+    this.size =
+        size;
+
+
+    /* ---------------------------------------------
+       Aplicar dimensiones al layout
+       --------------------------------------------- */
 
     this.layout = {
+
         ...this.layout,
-        ...layout
+
+        columns:
+            preset.columns,
+
+        rows:
+            preset.rows
     };
 
-    return this.layout;
+
+    /* ---------------------------------------------
+       Actualizar DOM
+       --------------------------------------------- */
+
+    if (this.element) {
+
+        this.element.dataset.widgetSize =
+            this.size;
+    }
+
+
+    return true;
 }
+
+
+    /* =====================================================
+       CAMBIAR VARIANTE
+       ===================================================== */
+
+    setVariant(variant) {
+
+        this.variant =
+            variant;
+
+        if (this.element) {
+
+            this.element.dataset.widgetVariant =
+                this.variant;
+        }
+
+        return this.variant;
+    }
 
 
     /* =====================================================
@@ -163,9 +290,9 @@ export class Widget {
     render() {
 
         if (!this.element) {
+
             this.createElement();
         }
-
     }
 
 
@@ -185,6 +312,7 @@ export class Widget {
     destroy() {
 
         if (this.element) {
+
             this.element.remove();
         }
 

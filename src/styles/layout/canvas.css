@@ -1,0 +1,43 @@
+/* =========================================================
+   CHERRY — CANVAS LAYOUT
+   ========================================================= */
+
+#cherry-canvas {
+    position: relative;
+    width: var(--cherry-canvas-width);
+    height: var(--cherry-canvas-height);
+    margin: 0 auto;
+    overflow: hidden;
+    background:
+        radial-gradient(
+            circle at 20% 15%,
+            rgba(59, 131, 246, 0.55),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 85% 70%,
+            rgba(96, 165, 250, 0.45),
+            transparent 40%
+        ),
+        var(--cherry-background);
+    border-radius: var(--cherry-canvas-radius);
+}
+
+#cherry-canvas::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px
+        );
+    background-size: 32px 32px;
+    pointer-events: none;
+    opacity: 0.4;
+}

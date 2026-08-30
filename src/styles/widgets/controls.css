@@ -1,0 +1,68 @@
+/* =========================================================
+   CHERRY — CONTROLS WIDGET
+   ========================================================= */
+
+.cherry-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cherry-space-lg);
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    color: var(--cherry-text-primary);
+}
+
+.cherry-controls-toggles,
+.cherry-controls-sliders {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cherry-space-sm);
+}
+
+.cherry-controls-toggles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--cherry-space-sm);
+}
+
+.cherry-control-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 var(--cherry-space-md);
+    border-radius: var(--cherry-radius-pill);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--cherry-text-primary);
+    font-size: var(--cherry-font-size-sm);
+    font-weight: var(--cherry-weight-medium);
+    transition: background var(--cherry-transition-fast),
+                transform var(--cherry-transition-fast),
+                border-color var(--cherry-transition-fast);
+}
+
+.cherry-control-toggle.active {
+    background: rgba(59, 130, 246, 0.18);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.cherry-control-toggle:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.cherry-control-toggle:active {
+    transform: scale(0.98);
+}
+
+.cherry-control-slider {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cherry-space-2xs);
+    font-size: var(--cherry-font-size-sm);
+    color: var(--cherry-text-secondary);
+}
+
+.cherry-control-slider input[type="range"] {
+    accent-color: var(--cherry-blue);
+}

@@ -28,21 +28,21 @@ const canvas = new Canvas({
 
 
 const clock = new ClockWidget({
+    size: "medium",
+    style: "onlyclock",
+    variant: "translucid",
     layout: {
         column: 0,
         row: 0,
-        columns: 4,
-        rows: 2
     }
 });
 
 
 const media = new MediaWidget({
+    size: "card",
+    style: "artworkProtagonist",
     layout: {
-        column: 0,
         row: 2,
-        columns: 4,
-        rows: 8
     }
 });
 
@@ -52,7 +52,7 @@ const system = new SystemWidget({
         column: 0,
         row: 13,
         columns: 4,
-        rows: 7
+        rows: 5
     }
 });
 
@@ -62,20 +62,20 @@ const controls = new ControlsWidget({
         column: 0,
         row: 10,
         columns: 4,
-        rows: 8
+        rows: 3
     }
 });
 
 const mediaVisual = new MediaVisualWidget({
 
     layout: {
-        column: 0,
-        row: 20,
+        column: 2,
+        row: 8,
         columns: 2,
         rows: 2
     },
 
-    variant: "glass",
+    variant: "translucid",
 
     settings: {
         source: "assets/media/cherry.jpg",
@@ -85,14 +85,16 @@ const mediaVisual = new MediaVisualWidget({
 });
 
 const text = new TextWidget({
+    variant: "translucid",
     layout: {
         column: 2,
-        row: 20,
+        row: 18,
         columns: 2,
         rows: 2
     }
 });
 
+console.log(media.layout);
 canvas.addWidget(mediaVisual);
 canvas.addWidget(clock);
 canvas.addWidget(media);

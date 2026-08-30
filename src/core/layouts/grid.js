@@ -20,6 +20,9 @@ export class Grid {
 
         this.gap =
             config.gap ?? 12;
+        
+        this.padding =
+            config.padding ?? 16;
     }
 
 
@@ -33,8 +36,12 @@ export class Grid {
             this.gap *
             (this.columns - 1);
 
+        const availableWidth =
+            this.width -
+            (this.padding * 2);
+         
         return (
-            this.width - totalGap
+            availableWidth - totalGap
         ) / this.columns;
     }
 
@@ -48,9 +55,12 @@ export class Grid {
         const totalGap =
             this.gap *
             (this.rows - 1);
-
+        
+        const availableHeight =
+            this.height -
+            (this.padding * 2);
         return (
-            this.height - totalGap
+            availableHeight - totalGap
         ) / this.rows;
     }
 
@@ -62,6 +72,7 @@ export class Grid {
     getX(column) {
 
         return (
+            this.padding +
             column *
             (
                 this.getColumnWidth() +
@@ -78,6 +89,7 @@ export class Grid {
     getY(row) {
 
         return (
+            this.padding +
             row *
             (
                 this.getRowHeight() +

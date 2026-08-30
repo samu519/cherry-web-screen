@@ -1,0 +1,36 @@
+/* =========================================================
+   CHERRY — TEXT WIDGET
+   ========================================================= */
+
+.widget-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: var(--cherry-space-md);
+    overflow: hidden;
+}
+
+.text-widget-content {
+    width: 100%;
+    display: block;
+    white-space: pre-wrap;
+    word-break: break-word;
+    letter-spacing: var(--cherry-tracking-tight);
+    line-height: 1.2;
+}
+
+.variant-glass {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: var(--cherry-shadow-soft);
+    backdrop-filter: blur(var(--cherry-blur-small));
+    -webkit-backdrop-filter: blur(var(--cherry-blur-small));
+}
+
+.variant-solid {
+    background: var(--cherry-solid-background);
+    border: 1px solid var(--cherry-solid-border);
+    box-shadow: var(--cherry-shadow-xs);
+}

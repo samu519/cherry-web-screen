@@ -1,0 +1,16 @@
+/* =========================================================
+   CHERRY — GRID LAYOUT
+   ========================================================= */
+
+#cherry-canvas {
+    --grid-gap: var(--cherry-grid-gap);
+    --grid-padding: var(--cherry-canvas-padding);
+}
+
+#cherry-canvas .cherry-widget {
+    z-index: 1;
+}
+
+#cherry-canvas > * {
+    position: absolute;
+}

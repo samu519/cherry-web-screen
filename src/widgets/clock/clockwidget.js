@@ -15,60 +15,191 @@ export class ClockWidget extends Widget {
         };
 
         this.interval = null;
-    }
+        this.sizePresets = {
 
+            small: {
+
+                columns: 2,
+                rows: 2
+            },
+
+            medium: {
+
+                columns: 4,
+                rows: 2
+            },
+
+            large: {
+
+                columns: 4,
+                rows: 4
+            }
+
+        };
+        this.setSize(this.size);
+
+        this.styles = {
+
+            onlyclock: {
+                showDate: false,
+                showSeconds: false
+            },
+            clockdate: {
+                showDate: true,
+                showSeconds: false
+            }
+        };
+
+        this.setStyle(this.style);
+    };
+    
     createElement() {
+
         const element = super.createElement();
 
-        element.classList.add("cherry-clock");
+        element.classList.add(
+            "cherry-clock"
+        );
 
+        element.style.containerType =
+            "size";
+
+        element.style.containerName =
+            "clock";
+
+
+        const timeElement =
+        document.createElement("div");
+
+        timeElement.classList.add(
+            "cherry-clock-time"
+        );
+
+
+        const dateElement =
+            document.createElement("div");
+
+        dateElement.classList.add(
+            "cherry-clock-date"
+        );
+
+
+        element.appendChild(
+            timeElement
+        );
+
+        element.appendChild(
+            dateElement
+        );
+
+
+        this.timeElement =
+            timeElement;
+
+        this.dateElement =
+            dateElement;
         return element;
     }
 
-    render() {
-        if (!this.element) {
-            return;
-        }
+    setStyle(style) {
 
-        this.updateTime();
+    const styleConfig =
+        this.styles[style];
 
-        if (!this.interval) {
-            this.interval = setInterval(() => {
-                this.updateTime();
-            }, 1000);
-        }
+    if (!styleConfig) {
+
+        console.warn(
+            `ClockWidget: style "${style}" no está definido.`
+        );
+
+        return false;
     }
 
+
+    this.style =
+        style;
+
+
+    this.settings = {
+
+        ...this.settings,
+
+        ...styleConfig
+    };
+
+
+    if (this.element) {
+
+        this.element.dataset.widgetStyle =
+            this.style;
+    }
+
+
+    this.updateTime();
+
+    return true;
+}
+    render() {
+
+    if (!this.element) {
+        this.createElement();
+    }
+
+    this.updateTime();
+
+    if (!this.interval) {
+
+        this.interval = setInterval(() => {
+
+            this.updateTime();
+
+        }, 1000);
+    }
+}
+
     updateTime() {
-        if (!this.element) {
-            return;
-        }
 
-        const now = new Date();
+    if (!this.element) {
+        return;
+    }
 
-        const timeOptions = {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: this.settings.format === "12h"
-        };
+    const now =
+        new Date();
 
-        if (this.settings.showSeconds) {
-            timeOptions.second = "2-digit";
-        }
 
-        const time = new Intl.DateTimeFormat(
+    const timeOptions = {
+
+        hour: "2-digit",
+
+        minute: "2-digit",
+
+        hour12:
+            this.settings.format === "12h"
+    };
+
+
+    if (this.settings.showSeconds) {
+
+        timeOptions.second =
+            "2-digit";
+    }
+
+
+    const time =
+        new Intl.DateTimeFormat(
             undefined,
             timeOptions
         ).format(now);
 
-        this.element.textContent = time;
 
-        if (this.settings.showDate) {
-            const dateElement = document.createElement("div");
+    this.timeElement.textContent =
+        time;
 
-            dateElement.classList.add("cherry-clock-date");
 
-            dateElement.textContent = new Intl.DateTimeFormat(
+    if (this.settings.showDate) {
+
+        this.dateElement.textContent =
+            new Intl.DateTimeFormat(
                 undefined,
                 {
                     weekday: "long",
@@ -77,9 +208,15 @@ export class ClockWidget extends Widget {
                 }
             ).format(now);
 
-            this.element.appendChild(dateElement);
-        }
+        this.dateElement.style.display =
+            "block";
+
+    } else {
+
+        this.dateElement.style.display =
+            "none";
     }
+}
 
     update() {
         super.update();
@@ -95,4 +232,6 @@ export class ClockWidget extends Widget {
 
         super.destroy();
     }
+
+
 }

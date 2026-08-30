@@ -1,0 +1,1830 @@
+/* =========================================================
+   CHERRY — MEDIA WIDGET
+   ========================================================= */
+
+
+/* =========================================================
+   01. BASE
+   ========================================================= */
+
+.cherry-media {
+
+    container: cherry-media / size;
+
+    display: flex;
+
+    flex-direction: column;
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    overflow: hidden;
+
+    color: var(--cherry-text-primary);
+}
+
+.cherry-media-content {
+
+    display: flex;
+
+    flex-direction: column;
+
+    flex: 1;
+
+    min-width: 0;
+    min-height: 0;
+
+}
+/* =========================================================
+   02. ARTWORK
+   ========================================================= */
+
+.cherry-media-artwork {
+
+    display: block;
+
+    width: 100%;
+    height: auto;
+
+    object-fit: cover;
+
+    flex-shrink: 0;
+
+    border-radius:
+        var(--cherry-media-artwork-radius);
+
+    background:
+        var(--cherry-gray-100);
+}
+
+
+/* =========================================================
+   03. INFORMATION
+   ========================================================= */
+
+.cherry-media-info {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+
+    gap:
+        var(--cherry-space-2xs);
+}
+
+
+.cherry-media-title {
+
+    overflow: hidden;
+
+    font-size:
+        var(--cherry-font-size-lg);
+
+    font-weight:
+        var(--cherry-weight-bold);
+
+    line-height: 1.15;
+
+    letter-spacing:
+        var(--cherry-tracking-tight);
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+
+    color:
+        var(--cherry-text-primary);
+}
+
+
+.cherry-media-artist {
+
+    overflow: hidden;
+
+    font-size:
+        var(--cherry-font-size-sm);
+
+    font-weight:
+        var(--cherry-weight-regular);
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+
+    color:
+        var(--cherry-text-secondary);
+}
+
+
+/* =========================================================
+   04. PROGRESS
+   ========================================================= */
+
+.cherry-media-progress {
+
+    width: 100%;
+    height:
+        var(--cherry-media-progress-height);
+
+    flex-shrink: 0;
+
+    overflow: hidden;
+
+    border-radius:
+        var(--cherry-radius-pill);
+
+    background:
+        var(--cherry-gray-200);
+}
+
+
+.cherry-media-progress-bar {
+
+    width: 0;
+    height: 100%;
+
+    border-radius:
+        inherit;
+
+    background:
+        var(--cherry-blue);
+
+    transition:
+        width var(--cherry-transition-normal);
+}
+
+
+/* =========================================================
+   05. CONTROLS
+   ========================================================= */
+
+.cherry-media-controls {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    gap:
+        var(--cherry-space-xl);
+}
+
+
+.cherry-media-controls button {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 36px;
+    height: 36px;
+
+    padding: 0;
+
+    border: none;
+
+    border-radius:
+        var(--cherry-radius-pill);
+
+    background:
+        transparent;
+
+    color:
+        var(--cherry-text-primary);
+
+    font-size:
+        var(--cherry-font-size-md);
+
+    cursor: pointer;
+
+    transition:
+        transform var(--cherry-transition-fast),
+        background var(--cherry-transition-fast);
+}
+
+
+.cherry-media-controls button:hover {
+
+    background:
+        var(--cherry-gray-100);
+}
+
+
+.cherry-media-controls button:active {
+
+    transform:
+        scale(0.92);
+}
+
+
+/* =========================================================
+   SMALL — 2 × 2
+   Artwork izquierda + información + controles
+   ========================================================= */
+
+.cherry-media[data-size="small"] {
+    display: grid;
+
+    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-rows: 1fr auto;
+
+    column-gap: var(--cherry-space-sm);
+    row-gap: var(--cherry-space-xs);
+
+    align-items: center;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   ARTWORK
+   ========================================================= */
+
+.cherry-media[data-size="small"]
+.cherry-media-artwork {
+
+    width: 64px;
+    height: 64px;
+
+    grid-column: 1;
+    grid-row: 1 / 3;
+
+    display: block;
+
+    object-fit: cover;
+
+    border-radius: 0;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.cherry-media[data-size="small"]
+.cherry-media-content {
+
+    display: contents;
+}
+
+
+/* =========================================================
+   INFORMATION
+   ========================================================= */
+
+.cherry-media[data-size="small"]
+.cherry-media-info {
+
+    grid-column: 2;
+    grid-row: 1;
+
+    min-width: 0;
+
+    gap: var(--cherry-space-2xs);
+}
+
+
+/* =========================================================
+   TITLE
+   ========================================================= */
+
+.cherry-media[data-size="small"]
+.cherry-media-title {
+
+    font-size:
+        var(--cherry-font-size-sm);
+
+    font-weight:
+        var(--cherry-weight-semibold);
+
+    line-height: 1.15;
+
+    color:
+        var(--cherry-text-primary);
+}
+
+
+/* =========================================================
+   ARTIST
+   ========================================================= */
+
+.cherry-media[data-size="small"]
+.cherry-media-artist {
+
+    font-size:
+        var(--cherry-font-size-xs);
+
+    color:
+        var(--cherry-text-secondary);
+}
+
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+
+.cherry-media[data-size="small"]
+.cherry-media-progress {
+
+    display: none;
+}
+
+
+/* =========================================================
+   CONTROLS
+   ========================================================= */
+
+.cherry-media[data-size="small"]
+.cherry-media-controls {
+
+    grid-column: 2;
+    grid-row: 2;
+
+    justify-content: flex-start;
+
+    gap:
+        var(--cherry-space-xs);
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.cherry-media[data-size="small"]
+.cherry-media-controls button {
+
+    width: 28px;
+    height: 28px;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   PLAY
+   ========================================================= */
+
+.cherry-media[data-size="small"]
+.cherry-media-controls button:nth-child(2) {
+
+    width: 34px;
+    height: 34px;
+
+    font-size:
+        var(--cherry-font-size-xs);
+}
+/* =========================================================
+   CARD — 2 × 4
+   Artwork arriba + reproductor abajo
+   ========================================================= */
+
+.cherry-media[data-size="card"] {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: var(--cherry-space-sm);
+
+    justify-content: space-between;
+
+    overflow: hidden;
+}
+
+
+/* Artwork */
+
+.cherry-media[data-size="card"]
+.cherry-media-artwork {
+
+    width: 100%;
+
+    /*
+       La imagen ocupa el espacio disponible
+       sin deformarse.
+    */
+    aspect-ratio: 1 / 1;
+
+    height: auto;
+
+    object-fit: cover;
+
+    flex-shrink: 1;
+
+    min-height: 0;
+
+    border-radius: 0;
+}
+
+
+/* Información */
+
+.cherry-media[data-size="card"]
+.cherry-media-info {
+
+    flex-shrink: 0;
+
+    min-height: 0;
+}
+
+
+/* Progreso */
+
+.cherry-media[data-size="card"]
+.cherry-media-progress {
+
+    flex-shrink: 0;
+}
+
+
+/* Controles */
+
+.cherry-media[data-size="card"]
+.cherry-media-controls {
+
+    flex-shrink: 0;
+
+    gap: var(--cherry-space-sm);
+}
+
+/* =========================================================
+   MEDIUM — 4 × 2
+   Artwork izquierda + reproductor compacto
+   ========================================================= */
+
+.cherry-media[data-size="medium"] {
+
+    display: flex;
+
+    flex-direction: row;
+
+    align-items: center;
+
+    gap: var(--cherry-space-md);
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   ARTWORK
+   ========================================================= */
+
+.cherry-media[data-size="medium"]
+.cherry-media-artwork {
+
+    width: 110px;
+    height: 110px;
+
+    flex-shrink: 0;
+
+    aspect-ratio: 1 / 1;
+
+    object-fit: cover;
+
+    border-radius:
+        var(--cherry-media-artwork-radius);
+}
+
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.cherry-media[data-size="medium"]
+.cherry-media-content {
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: stretch;
+
+    flex: 1;
+
+    min-width: 0;
+    min-height: 0;
+
+    gap: var(--cherry-space-xs);
+}
+
+
+/* =========================================================
+   INFORMATION
+   ========================================================= */
+
+.cherry-media[data-size="medium"]
+.cherry-media-info {
+
+    min-width: 0;
+
+    gap: 2px;
+}
+
+
+.cherry-media[data-size="medium"]
+.cherry-media-title {
+
+    font-size:
+        var(--cherry-font-size-md);
+
+    line-height: 1.15;
+}
+
+
+.cherry-media[data-size="medium"]
+.cherry-media-artist {
+
+    font-size:
+        var(--cherry-font-size-sm);
+
+    line-height: 1.15;
+}
+
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+
+.cherry-media[data-size="medium"]
+.cherry-media-progress {
+
+    width: 100%;
+
+    height: 4px;
+}
+
+
+/* =========================================================
+   CONTROLS
+   ========================================================= */
+
+.cherry-media[data-size="medium"]
+.cherry-media-controls {
+
+    justify-content: flex-start;
+
+    gap: var(--cherry-space-sm);
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.cherry-media[data-size="medium"]
+.cherry-media-controls button {
+
+    width: 30px;
+    height: 30px;
+
+    font-size: 13px;
+}
+
+
+.cherry-media[data-size="medium"]
+.cherry-media-controls button:nth-child(2) {
+
+    width: 38px;
+    height: 38px;
+
+    font-size:
+        var(--cherry-font-size-sm);
+}
+
+/* =========================================================
+   LARGE — 4 × 4
+   Artwork izquierda + reproductor derecha
+   ========================================================= */
+
+.cherry-media[data-size="large"] {
+
+    display: flex;
+
+    flex-direction: row;
+
+    align-items: center;
+
+    gap: var(--cherry-space-2xl);
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   ARTWORK
+   ========================================================= */
+
+.cherry-media[data-size="large"]
+.cherry-media-artwork {
+
+    width: 42%;
+    max-width: 220px;
+
+    aspect-ratio: 1 / 1;
+
+    height: auto;
+
+    flex-shrink: 0;
+
+    object-fit: cover;
+
+    border-radius:
+        var(--cherry-media-artwork-radius);
+}
+
+
+/* =========================================================
+   REPRODUCTOR
+   ========================================================= */
+
+.cherry-media[data-size="large"] {
+
+    align-items: center;
+}
+
+
+/* Información + progreso + controles */
+
+.cherry-media[data-size="large"]
+.cherry-media-info,
+.cherry-media[data-size="large"]
+.cherry-media-progress,
+.cherry-media[data-size="large"]
+.cherry-media-controls {
+
+    flex-shrink: 0;
+
+}
+
+
+/* =========================================================
+   INFORMACIÓN
+   ========================================================= */
+
+.cherry-media[data-size="large"]
+.cherry-media-info {
+
+    width: 100%;
+
+    min-width: 0;
+
+}
+
+
+/* =========================================================
+   PROGRESO
+   ========================================================= */
+
+.cherry-media[data-size="large"]
+.cherry-media-progress {
+
+    width: 100%;
+
+    margin-top:
+        var(--cherry-space-lg);
+}
+
+
+/* =========================================================
+   CONTROLES
+   ========================================================= */
+
+.cherry-media[data-size="large"]
+.cherry-media-controls {
+
+    justify-content: flex-start;
+
+    margin-top:
+        var(--cherry-space-md);
+
+    gap:
+        var(--cherry-space-xl);
+}
+
+/* =========================================================
+   GIANT — 4 × 8
+   ========================================================= */
+
+.cherry-media[data-size="giant"] {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: var(--cherry-space-xl);
+
+    justify-content: space-between;
+
+    overflow: hidden;
+
+    padding:
+        var(--cherry-space-xl);
+}
+
+
+/* Artwork */
+
+.cherry-media[data-size="giant"]
+.cherry-media-artwork {
+
+    width: min(100%, 320px);
+
+    aspect-ratio: 1 / 1;
+
+    height: auto;
+
+    object-fit: cover;
+
+    align-self: center;
+
+    flex-shrink: 1;
+
+    min-height: 0;
+
+    border-radius:
+        var(--cherry-radius-xl);
+}
+
+
+/* Información */
+
+.cherry-media[data-size="giant"]
+.cherry-media-info {
+
+    flex-shrink: 0;
+
+    gap: var(--cherry-space-sm);
+}
+
+
+/* Título */
+
+.cherry-media[data-size="giant"]
+.cherry-media-title {
+
+    font-size:
+        var(--cherry-font-size-2xl);
+}
+
+
+/* Artista */
+
+.cherry-media[data-size="giant"]
+.cherry-media-artist {
+
+    font-size:
+        var(--cherry-font-size-md);
+}
+
+
+/* Progreso */
+
+.cherry-media[data-size="giant"]
+.cherry-media-progress {
+
+    flex-shrink: 0;
+
+    height: 6px;
+}
+
+
+/* Controles */
+
+.cherry-media[data-size="giant"]
+.cherry-media-controls {
+
+    flex-shrink: 0;
+
+    gap: var(--cherry-space-2xl);
+}
+
+
+/* Botones */
+
+.cherry-media[data-size="giant"]
+.cherry-media-controls button {
+
+    width: 42px;
+
+    height: 42px;
+
+    font-size:
+        var(--cherry-font-size-md);
+}
+
+
+/* Play */
+
+.cherry-media[data-size="giant"]
+.cherry-media-controls button:nth-child(2) {
+
+    width: 58px;
+
+    height: 58px;
+}
+
+/* =========================================================
+   DEFAULT
+   Flat media player
+   ========================================================= */
+
+.cherry-media[data-style="default"]
+.cherry-media-backdrop {
+
+    display: none;
+}
+
+/* =========================================================
+   ARTWORK PROTAGONIST
+   BACKDROP
+   ========================================================= */
+.cherry-media[data-size="large"][data-style="artworkProtagonist"] {
+
+    position: relative;
+
+    overflow: hidden;
+
+    background:
+        rgba(20, 20, 24, 0.35);
+}
+
+.cherry-media-backdrop {
+
+    position: absolute;
+
+    inset: -30px;
+
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+
+    filter: blur(5px);
+
+
+    opacity: 0.5;
+
+    transition:
+        opacity var(--cherry-transition-slow);
+
+    z-index: -2;
+}
+
+
+.cherry-media[data-size="large"][data-style="artworkProtagonist"]
+.cherry-media-backdrop {
+
+    opacity: 0.65;
+}
+
+.cherry-media[data-size="large"][data-style="artworkProtagonist"]
+.cherry-media-backdrop::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.00) 35%,
+            rgba(255, 255, 255, 0.35) 65%,
+            rgba(255, 255, 255, 0.82) 100%
+        );
+}
+
+.cherry-media[data-size="large"][data-style="artworkProtagonist"]
+.cherry-media-artwork {
+
+    position: relative;
+
+    z-index: 2;
+}
+
+
+.cherry-media[data-size="large"][data-style="artworkProtagonist"]
+.cherry-media-content {
+
+    position: relative;
+
+    z-index: 2;
+}
+
+.cherry-media[data-size="large"][data-style="artworkProtagonist"]
+.cherry-media-title,
+.cherry-media[data-size="large"][data-style="artworkProtagonist"]
+.cherry-media-artist {
+
+    color: var(--cherry-white);
+}
+
+.cherry-media[data-size="large"][data-style="artworkProtagonist"]
+.cherry-media-info {
+
+    padding:
+        var(--cherry-space-sm)
+        var(--cherry-space-md);
+
+    border-radius:
+        var(--cherry-radius-medium);
+
+    background:
+        rgba(255, 255, 255, 0.22);
+
+    backdrop-filter:
+        blur(var(--cherry-blur-small));
+
+    -webkit-backdrop-filter:
+        blur(var(--cherry-blur-small));
+}
+/* =========================================================
+   ARTWORK PROTAGONIST — LARGE
+   SONG INFORMATION
+   ========================================================= */
+
+.cherry-media[data-size="large"][data-style="artworkProtagonist"]
+.cherry-media-info {
+    color: var(--cherry-black);
+}
+
+
+.cherry-media[data-size="large"][data-style="artworkProtagonist"]
+.cherry-media-title {
+    font-size: var(--cherry-font-size-xl);
+
+    font-weight:
+        var(--cherry-weight-bold);
+
+    color: var(--cherry-black);
+}
+
+
+.cherry-media[data-size="large"][data-style="artworkProtagonist"]
+.cherry-media-artist {
+    font-size: var(--cherry-font-size-lg);
+
+    font-weight:
+        var(--cherry-weight-medium);
+
+    color: var(--cherry-black);
+
+    opacity: 1;
+}
+
+/* =========================================================
+   ARTWORK PROTAGONIST — CARD
+   2 × 4
+   Artwork + fade to white + player
+   ========================================================= */
+
+.cherry-media[data-size="card"][data-style="artworkProtagonist"] {
+
+    position: relative;
+
+    overflow: hidden;
+
+    background:
+        var(--cherry-white);
+}
+
+
+/* =========================================================
+   BACKDROP
+   ========================================================= */
+
+.cherry-media[data-size="card"][data-style="artworkProtagonist"]
+.cherry-media-backdrop {
+
+    display: block;
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 0;
+    aspect-ratio: 1 / 1;
+
+    background-position: center;
+
+    background-size: cover;
+
+    background-repeat: no-repeat;
+
+    filter: none;
+
+    opacity: 1;
+}
+
+
+/* =========================================================
+   FADE TO WHITE
+   ========================================================= */
+
+.cherry-media[data-size="card"][data-style="artworkProtagonist"]
+.cherry-media-backdrop::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0) 45%,
+            rgba(255, 255, 255, 0.15) 65%,
+            rgba(255, 255, 255, 0.60) 78%,
+            rgba(255, 255, 255, 0.90) 88%,
+            var(--cherry-white) 98%
+        );
+}
+
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.cherry-media[data-size="card"][data-style="artworkProtagonist"]
+.cherry-media-content {
+
+    position: relative;
+
+    z-index: 2;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: flex-end;
+
+    flex: 1;
+
+    min-height: 0;
+
+    padding:
+        var(--cherry-space-md);
+}
+
+
+/* =========================================================
+   ARTWORK
+   ========================================================= */
+
+.cherry-media[data-size="card"][data-style="artworkProtagonist"]
+.cherry-media-artwork {
+
+    display: none;
+}
+
+
+/* =========================================================
+   INFORMATION
+   ========================================================= */
+
+.cherry-media[data-size="card"][data-style="artworkProtagonist"]
+.cherry-media-info {
+
+    margin-top: auto;
+
+    padding-top:
+        var(--cherry-space-xl);
+}
+
+
+.cherry-media[data-size="card"][data-style="artworkProtagonist"]
+.cherry-media-title {
+
+    color:
+        var(--cherry-black);
+
+    font-size:
+        var(--cherry-font-size-lg);
+
+    font-weight:
+        var(--cherry-weight-bold);
+}
+
+
+.cherry-media[data-size="card"][data-style="artworkProtagonist"]
+.cherry-media-artist {
+
+    color:
+        var(--cherry-text-secondary);
+
+    font-size:
+        var(--cherry-font-size-sm);
+
+    font-weight:
+        var(--cherry-weight-medium);
+
+    opacity: 1;
+}
+
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+
+.cherry-media[data-size="card"][data-style="artworkProtagonist"]
+.cherry-media-progress {
+
+    margin-top:
+        var(--cherry-space-md);
+}
+
+
+/* =========================================================
+   CONTROLS
+   ========================================================= */
+
+.cherry-media[data-size="card"][data-style="artworkProtagonist"]
+.cherry-media-controls {
+
+    margin-top:
+        var(--cherry-space-xs);
+
+    gap:
+        var(--cherry-space-sm);
+}
+
+/* =========================================================
+   ARTWORK PROTAGONIST — GIANT
+   4 × 8
+   Artwork protagonista + fade suave
+   ========================================================= */
+
+.cherry-media[data-size="giant"][data-style="artworkProtagonist"] {
+
+    position: relative;
+
+    overflow: hidden;
+
+    background:
+        var(--cherry-white);
+    isolation: isolate;
+}
+
+
+/* =========================================================
+   BACKDROP
+   ========================================================= */
+
+.cherry-media[data-size="giant"][data-style="artworkProtagonist"]
+.cherry-media-backdrop {
+
+    display: block;
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 0;
+
+    background-position: center;
+
+    background-size: cover;
+
+    background-repeat: no-repeat;
+
+    filter: blur(10px);
+
+    transform: scale(1.03);
+
+    opacity: 1;
+    aspect-ratio: 1 / 1.5;
+}
+
+
+/* =========================================================
+   FADE + BLUR VISUAL
+   ========================================================= */
+
+.cherry-media[data-size="giant"][data-style="artworkProtagonist"]
+.cherry-media-backdrop::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            to bottom,
+
+            rgba(255, 255, 255, 0) 45%,
+
+            rgba(255, 255, 255, 0.04) 55%,
+
+            rgba(255, 255, 255, 0.16) 67%,
+
+            rgba(255, 255, 255, 0.42) 77%,
+
+            rgba(255, 255, 255, 0.72) 86%,
+
+            rgba(255, 255, 255, 0.94) 94%,
+
+            var(--cherry-white) 100%
+        );
+}
+
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.cherry-media[data-size="giant"][data-style="artworkProtagonist"]
+.cherry-media-content {
+
+    position: relative;
+
+    z-index: 2;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: flex-end;
+
+    flex: 1;
+
+    min-height: 0;
+
+    padding:
+        var(--cherry-space-md);
+}
+
+
+/* =========================================================
+   ARTWORK IMG
+   ========================================================= */
+
+.cherry-media[data-size="giant"][data-style="artworkProtagonist"]
+.cherry-media-artwork {
+    z-index: 3;
+    display: block;
+    border-radius: 10px;
+}
+
+
+/* =========================================================
+   INFORMATION
+   ========================================================= */
+
+.cherry-media[data-size="giant"][data-style="artworkProtagonist"]
+.cherry-media-info {
+
+    margin-top: 5%;
+
+    padding-top:
+        var(--cherry-space-md);
+}
+
+
+.cherry-media[data-size="giant"][data-style="artworkProtagonist"]
+.cherry-media-title {
+    margin-top: 0;
+
+    color:
+        var(--cherry-black);
+
+    font-size:
+        var(--cherry-font-size-3xl);
+
+    font-weight:
+        var(--cherry-weight-bold);
+    align-self: center;
+}
+
+
+.cherry-media[data-size="giant"][data-style="artworkProtagonist"]
+.cherry-media-artist {
+
+    color:
+        var(--cherry-text-primary);
+
+    font-size:
+        var(--cherry-font-size-xl);
+
+    font-weight:
+        var(--cherry-weight-medium);
+
+    opacity: 1;
+    align-self: center;
+}
+
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+
+.cherry-media[data-size="giant"][data-style="artworkProtagonist"]
+.cherry-media-progress {
+
+    margin-top:
+        var(--cherry-space-sm);
+
+    height:
+        var(--cherry-media-progress-height);
+    background-color:rgba(20, 20, 24, 0.171)
+}
+
+
+/* =========================================================
+   CONTROLS
+   ========================================================= */
+
+.cherry-media[data-size="giant"][data-style="artworkProtagonist"]
+.cherry-media-controls {
+
+    margin-top:
+        var(--cherry-space-md);
+
+    gap:
+        var(--cherry-space-2xl);
+        
+}
+
+/* =========================================================
+   ARTWORK PROTAGONIST — SMALL
+   Mini reproductor sobre la portada
+   ========================================================= */
+
+.cherry-media[data-size="small"][data-style="artworkProtagonist"] {
+
+    position: relative;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: flex-end;
+
+    overflow: hidden;
+
+    background:
+        var(--cherry-gray-100);
+}
+
+
+/* =========================================================
+   BACKDROP
+   ========================================================= */
+
+.cherry-media[data-size="small"][data-style="artworkProtagonist"]
+.cherry-media-backdrop {
+
+    display: block;
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 0;
+
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+
+    filter: blur(2px);
+
+    opacity: 1;
+    
+    aspect-ratio: 1 / 1;
+}
+
+
+/* =========================================================
+   FADE
+   ========================================================= */
+
+.cherry-media[data-size="small"][data-style="artworkProtagonist"]
+.cherry-media-backdrop::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    filter: blur(5px);
+}
+
+
+/* =========================================================
+   ARTWORK REAL
+   ========================================================= */
+
+.cherry-media[data-size="small"][data-style="artworkProtagonist"]
+.cherry-media-artwork {
+
+    display: none;
+}
+
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.cherry-media[data-size="small"][data-style="artworkProtagonist"]
+.cherry-media-content {
+
+    position: relative;
+
+    z-index: 2;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: flex-end;
+
+    width: 100%;
+
+    padding:
+        var(--cherry-space-sm);
+}
+
+
+/* =========================================================
+   INFORMATION
+   ========================================================= */
+
+.cherry-media[data-size="small"][data-style="artworkProtagonist"]
+.cherry-media-info {
+    align-items: center;
+    gap: var(--cherry-space-xs);
+    background-color: rgba(255, 251, 251, 0.582);
+    border-radius: var(--cherry-radius-medium);
+}
+
+
+/* =========================================================
+   TITLE
+   ========================================================= */
+
+.cherry-media[data-size="small"][data-style="artworkProtagonist"]
+.cherry-media-title {
+
+    font-size:
+        var(--cherry-font-size-md);
+
+    font-weight:
+        var(--cherry-weight-bold);
+
+    color:
+        var(--cherry-black);
+}
+
+
+/* =========================================================
+   ARTIST
+   ========================================================= */
+
+.cherry-media[data-size="small"][data-style="artworkProtagonist"]
+.cherry-media-artist {
+
+    font-size:
+        var(--cherry-font-size-sm);
+
+    font-weight:
+        var(--cherry-weight-medium);
+
+    color:
+        var(--cherry-text-primary);
+
+    opacity: 1;
+}
+
+
+/* =========================================================
+   CONTROLS
+   ========================================================= */
+
+.cherry-media[data-size="small"][data-style="artworkProtagonist"]
+.cherry-media-controls {
+    align-items: center;
+    justify-content: center;
+
+    margin-top:
+        var(--cherry-space-xs);
+
+    gap:
+        var(--cherry-space-xs);
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.cherry-media[data-size="small"][data-style="artworkProtagonist"]
+.cherry-media-controls button {
+
+    background:
+        rgba(255,255,255,0.65);
+
+    color:
+        var(--cherry-black);
+
+    backdrop-filter:
+        blur(var(--cherry-blur-small));
+
+    -webkit-backdrop-filter:
+        blur(var(--cherry-blur-small));
+}
+
+
+.cherry-media[data-size="small"][data-style="artworkProtagonist"]
+.cherry-media-controls button:nth-child(2) {
+
+    background:
+        var(--cherry-black);
+
+    color:
+        var(--cherry-white);
+}
+
+/* =========================================================
+   ARTWORK PROTAGONIST — MEDIUM
+   4 × 2
+   Portada izquierda + información derecha
+   ========================================================= */
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"] {
+
+    position: relative;
+
+    display: flex;
+    flex-direction: row;
+
+    align-items: center;
+
+    gap: var(--cherry-space-lg);
+
+    overflow: hidden;
+
+    background:
+        var(--cherry-white);
+}
+
+
+/* =========================================================
+   BACKDROP
+   ========================================================= */
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"]
+.cherry-media-backdrop {
+
+    display: block;
+
+    position: absolute;
+
+    inset: -25px;
+
+    z-index: 0;
+
+    background-position: left;
+    background-repeat: no-repeat;
+
+    filter: blur(18px);
+
+    opacity: 1;
+    aspect-ratio: 16 / 9;
+    
+}
+
+
+/* =========================================================
+   CAPA DE LECTURA
+   ========================================================= */
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"]
+.cherry-media-backdrop::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        rgba(255, 255, 255, 0.068) 78%;
+}
+
+
+/* =========================================================
+   ARTWORK
+   ========================================================= */
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"]
+.cherry-media-artwork {
+
+    position: relative;
+
+    z-index: 2;
+
+    display: block;
+
+    width: 35%;
+
+    height: auto;
+
+    aspect-ratio: 1 / 1;
+
+    flex-shrink: 0;
+
+    object-fit: cover;
+
+    border-radius: var(--cherry-radius-medium);
+}
+
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"]
+.cherry-media-content {
+
+    position: relative;
+
+    z-index: 2;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: stretch;
+
+    flex: 1;
+
+    min-width: 0;
+}
+
+
+/* =========================================================
+   INFORMATION
+   ========================================================= */
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"]
+.cherry-media-info {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: var(--cherry-space-2xs);
+
+    min-width: 0;
+}
+
+
+/* =========================================================
+   TITLE
+   ========================================================= */
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"]
+.cherry-media-title {
+
+    color: var(--cherry-black);
+
+    font-size: var(--cherry-font-size-lg);
+
+    font-weight: var(--cherry-weight-bold);
+
+    line-height: 1.1;
+
+    letter-spacing:
+        var(--cherry-tracking-tight);
+}
+
+
+/* =========================================================
+   ARTIST
+   ========================================================= */
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"]
+.cherry-media-artist {
+
+    color: var(--cherry-text-primary);
+
+    font-size: var(--cherry-font-size-sm);
+
+    font-weight: var(--cherry-weight-medium);
+
+    opacity: 1;
+}
+
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"]
+.cherry-media-progress {
+
+    position: relative;
+
+    z-index: 2;
+
+    width: 100%;
+
+    height: 4px;
+
+    margin-top: var(--cherry-space-md);
+
+    background:
+        rgba(0, 0, 0, 0.12);
+}
+
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"]
+.cherry-media-progress-bar {
+
+    background:
+        var(--cherry-black);
+}
+
+
+/* =========================================================
+   CONTROLS
+   ========================================================= */
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"]
+.cherry-media-controls {
+
+    position: relative;
+
+    z-index: 2;
+
+    justify-content: flex-start;
+
+    gap: var(--cherry-space-sm);
+
+    margin-top: var(--cherry-space-sm);
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"]
+.cherry-media-controls button {
+
+    color: var(--cherry-black);
+
+    background:
+        rgba(255, 255, 255, 0.45);
+
+    width: 30px;
+    height: 30px;
+
+    font-size: 13px;
+}
+
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"]
+.cherry-media-controls button:hover {
+
+    background:
+        rgba(255, 255, 255, 0.70);
+}
+
+
+/* =========================================================
+   PLAY
+   ========================================================= */
+
+.cherry-media[data-size="medium"][data-style="artworkProtagonist"]
+.cherry-media-controls button:nth-child(2) {
+
+    width: 38px;
+    height: 38px;
+
+    background:
+        var(--cherry-black);
+
+    color:
+        var(--cherry-white);
+}
