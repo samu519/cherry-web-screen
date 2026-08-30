@@ -1,0 +1,364 @@
+/* =========================================================
+   CHERRY — MAIN STYLES
+   Componentes y estructura visual
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   1. RESET
+   --------------------------------------------------------- */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    font-family: var(--cherry-font-family);
+
+    background: var(--cherry-background);
+
+    color: var(--cherry-text-primary);
+}
+
+
+/* ---------------------------------------------------------
+   2. CHERRY APP / CANVAS
+   --------------------------------------------------------- */
+
+#cherry-canvas {
+    position: relative;
+
+    width: var(--cherry-canvas-width);
+    height: var(--cherry-canvas-height);
+
+    margin: 0 auto;
+
+    overflow: hidden;
+
+    background: var(--cherry-white);
+}
+
+
+/* ---------------------------------------------------------
+   3. BASE WIDGET
+   --------------------------------------------------------- */
+
+.cherry-widget {
+    position: absolute;
+
+    overflow: hidden;
+
+    user-select: none;
+}
+
+
+/* ---------------------------------------------------------
+   4. CLOCK
+   --------------------------------------------------------- */
+
+.cherry-clock {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-direction: column;
+
+    color: var(--cherry-text-primary);
+
+    font-size: var(--cherry-font-size-clock);
+    font-weight: var(--cherry-weight-bold);
+
+    letter-spacing: -3px;
+}
+
+.cherry-clock-date {
+    margin-top: var(--cherry-space-sm);
+
+    font-size: var(--cherry-font-size-lg);
+    font-weight: var(--cherry-weight-medium);
+
+    letter-spacing: -0.5px;
+
+    color: var(--cherry-text-secondary);
+}
+
+
+/* ---------------------------------------------------------
+   5. MEDIA
+   --------------------------------------------------------- */
+
+.cherry-media {
+    display: flex;
+
+    flex-direction: column;
+
+    padding: var(--cherry-widget-padding);
+
+    border-radius: var(--cherry-radius-xl);
+
+    background: var(--cherry-glass-dark);
+
+    color: var(--cherry-white);
+
+    backdrop-filter: blur(var(--cherry-blur-medium));
+    -webkit-backdrop-filter: blur(var(--cherry-blur-medium));
+
+    box-shadow: var(--cherry-shadow-medium);
+}
+
+.cherry-media-artwork {
+    width: 100%;
+
+    aspect-ratio: 1 / 1;
+
+    object-fit: cover;
+
+    border-radius: var(--cherry-radius-large);
+
+    margin-bottom: var(--cherry-space-xl);
+}
+
+.cherry-media-info {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: var(--cherry-space-xs);
+}
+
+.cherry-media-title {
+    font-size: 25px;
+    font-weight: var(--cherry-weight-bold);
+
+    letter-spacing: -0.8px;
+}
+
+.cherry-media-artist {
+    font-size: var(--cherry-font-size-md);
+    font-weight: var(--cherry-weight-regular);
+
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.cherry-media-progress {
+    width: 100%;
+    height: 5px;
+
+    margin-top: var(--cherry-space-xl);
+
+    overflow: hidden;
+
+    border-radius: var(--cherry-radius-pill);
+
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.cherry-media-progress-bar {
+    height: 100%;
+
+    border-radius: inherit;
+
+    background: var(--cherry-blue);
+
+    transition: width var(--cherry-transition-normal);
+}
+
+.cherry-media-controls {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: var(--cherry-space-2xl);
+
+    margin-top: var(--cherry-space-xl);
+}
+
+.cherry-media-controls button {
+    border: none;
+
+    background: transparent;
+
+    color: var(--cherry-white);
+
+    font-size: 22px;
+
+    cursor: pointer;
+
+    transition: transform var(--cherry-transition-fast);
+}
+
+.cherry-media-controls button:active {
+    transform: scale(0.92);
+}
+
+.cherry-media-controls button:nth-child(2) {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 52px;
+    height: 52px;
+
+    border-radius: 50%;
+
+    background: var(--cherry-white);
+
+    color: var(--cherry-black);
+
+    font-size: var(--cherry-font-size-md);
+}
+
+
+/* ---------------------------------------------------------
+   6. SYSTEM
+   --------------------------------------------------------- */
+
+.cherry-system {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: var(--cherry-space-md);
+
+    padding: var(--cherry-space-lg);
+
+    border-radius: var(--cherry-radius-large);
+
+    background: var(--cherry-glass-soft);
+}
+
+.cherry-system-metric {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-direction: column;
+
+    min-height: 150px;
+
+    border-radius: var(--cherry-radius-xl);
+
+    background: var(--cherry-glass-light);
+
+    box-shadow: var(--cherry-shadow-soft);
+}
+
+.cherry-system-metric-name {
+    margin-bottom: var(--cherry-space-sm);
+
+    font-size: var(--cherry-font-size-sm);
+    font-weight: var(--cherry-weight-semibold);
+
+    letter-spacing: 1px;
+
+    color: var(--cherry-text-secondary);
+}
+
+.cherry-system-metric-value {
+    font-size: var(--cherry-font-size-2xl);
+    font-weight: var(--cherry-weight-bold);
+
+    letter-spacing: -1.5px;
+
+    color: var(--cherry-text-primary);
+}
+
+
+/* ---------------------------------------------------------
+   7. CONTROLS
+   --------------------------------------------------------- */
+
+.cherry-controls {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: var(--cherry-space-xl);
+
+    padding: var(--cherry-widget-padding);
+
+    border-radius: var(--cherry-radius-large);
+
+    background: var(--cherry-glass-soft);
+}
+
+.cherry-controls-toggles {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: var(--cherry-space-md);
+}
+
+.cherry-control-toggle {
+    min-height: 64px;
+
+    border: none;
+
+    border-radius: var(--cherry-radius-medium);
+
+    background: var(--cherry-gray-light);
+
+    color: var(--cherry-gray-dark);
+
+    font-size: var(--cherry-font-size-md);
+    font-weight: var(--cherry-weight-semibold);
+
+    cursor: pointer;
+
+    transition:
+        background var(--cherry-transition-normal),
+        color var(--cherry-transition-normal),
+        transform var(--cherry-transition-fast);
+}
+
+.cherry-control-toggle:active {
+    transform: scale(0.97);
+}
+
+.cherry-control-toggle.active {
+    background: var(--cherry-blue);
+
+    color: var(--cherry-white);
+}
+
+.cherry-controls-sliders {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: var(--cherry-space-lg);
+}
+
+.cherry-control-slider {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: var(--cherry-space-sm);
+}
+
+.cherry-control-slider span {
+    font-size: var(--cherry-font-size-sm);
+    font-weight: var(--cherry-weight-semibold);
+
+    color: var(--cherry-gray-dark);
+}
+
+.cherry-control-slider input {
+    width: 100%;
+
+    accent-color: var(--cherry-blue);
+}

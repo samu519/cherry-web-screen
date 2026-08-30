@@ -1,0 +1,274 @@
+/* =========================================================
+   CHERRY — DESIGN SYSTEM
+   Variables globales
+   ========================================================= */
+
+:root {
+
+    /* =====================================================
+       01. COLORS
+       ===================================================== */
+
+    /* Base */
+    --cherry-white: #ffffff;
+    --cherry-black: #111111;
+
+    --cherry-background: #f5f6f8;
+    --cherry-surface: #ffffff;
+
+    /* Texto */
+    --cherry-text-primary: #111111;
+    --cherry-text-secondary: #666a73;
+    --cherry-text-muted: #9297a1;
+    --cherry-text-disabled: #b8bbc2;
+
+    /* Azul Cherry */
+    --cherry-blue: #3b82f6;
+    --cherry-blue-hover: #2563eb;
+    --cherry-blue-soft: #dbeafe;
+
+    /* Grises */
+    --cherry-gray-50: #f8f9fb;
+    --cherry-gray-100: #eef0f3;
+    --cherry-gray-200: #e2e4e8;
+    --cherry-gray-300: #d3d6dc;
+    --cherry-gray-400: #b7bbc3;
+    --cherry-gray-500: #8b9099;
+    --cherry-gray-600: #666a73;
+    --cherry-gray-700: #484c54;
+    --cherry-gray-800: #2c2f35;
+    --cherry-gray-900: #181a1e;
+
+
+    /* =====================================================
+       02. GLASS
+       ===================================================== */
+
+    /*
+       El glass oscuro es uno de los elementos principales
+       de la identidad visual de Cherry.
+    */
+
+    --cherry-glass-dark:
+        rgba(28, 29, 33, 0.72);
+
+    --cherry-glass-dark-soft:
+        rgba(28, 29, 33, 0.58);
+
+    --cherry-glass-light:
+        rgba(255, 255, 255, 0.72);
+
+    --cherry-glass-light-soft:
+        rgba(255, 255, 255, 0.52);
+
+    /* Bordes del glass */
+
+    --cherry-glass-border:
+        rgba(255, 255, 255, 0.18);
+
+    --cherry-glass-border-light:
+        rgba(255, 255, 255, 0.45);
+
+    --cherry-glass-border-dark:
+        rgba(0, 0, 0, 0.08);
+
+
+    /* =====================================================
+       03. BLUR
+       ===================================================== */
+
+    --cherry-blur-small: 12px;
+    --cherry-blur-medium: 24px;
+    --cherry-blur-large: 40px;
+
+
+    /* =====================================================
+       04. BORDER RADIUS
+       ===================================================== */
+
+    --cherry-radius-xs: 8px;
+    --cherry-radius-small: 12px;
+    --cherry-radius-medium: 18px;
+    --cherry-radius-large: 26px;
+    --cherry-radius-xl: 32px;
+
+    --cherry-radius-pill: 999px;
+
+
+    /* =====================================================
+       05. SPACING
+       ===================================================== */
+
+    --cherry-space-2xs: 4px;
+    --cherry-space-xs: 8px;
+    --cherry-space-sm: 12px;
+    --cherry-space-md: 16px;
+    --cherry-space-lg: 20px;
+    --cherry-space-xl: 24px;
+    --cherry-space-2xl: 32px;
+    --cherry-space-3xl: 40px;
+    --cherry-space-4xl: 48px;
+
+
+    /* =====================================================
+       06. SHADOWS
+       ===================================================== */
+
+    --cherry-shadow-xs:
+        0 2px 8px rgba(0, 0, 0, 0.04);
+
+    --cherry-shadow-soft:
+        0 8px 24px rgba(0, 0, 0, 0.06);
+
+    --cherry-shadow-medium:
+        0 12px 32px rgba(0, 0, 0, 0.09);
+
+    --cherry-shadow-large:
+        0 20px 50px rgba(0, 0, 0, 0.13);
+
+
+    /* =====================================================
+       07. TYPOGRAPHY
+       ===================================================== */
+
+    --cherry-font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "Segoe UI",
+        sans-serif;
+
+    --cherry-font-family-mono:
+        "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        monospace;
+
+    /* Tamaños */
+
+    --cherry-font-size-xs: 12px;
+    --cherry-font-size-sm: 14px;
+    --cherry-font-size-md: 16px;
+    --cherry-font-size-lg: 20px;
+    --cherry-font-size-xl: 28px;
+    --cherry-font-size-2xl: 36px;
+    --cherry-font-size-3xl: 48px;
+
+    --cherry-font-size-clock: 72px;
+
+
+    /* =====================================================
+       08. FONT WEIGHTS
+       ===================================================== */
+
+    --cherry-weight-regular: 400;
+    --cherry-weight-medium: 500;
+    --cherry-weight-semibold: 600;
+    --cherry-weight-bold: 700;
+
+
+    /* =====================================================
+       09. LETTER SPACING
+       ===================================================== */
+
+    --cherry-tracking-tight: -1.5px;
+    --cherry-tracking-normal: 0;
+    --cherry-tracking-wide: 0.5px;
+    --cherry-tracking-wider: 1px;
+
+
+    /* =====================================================
+       10. TRANSITIONS
+       ===================================================== */
+
+    --cherry-transition-fast:
+        120ms ease;
+
+    --cherry-transition-normal:
+        180ms ease;
+
+    --cherry-transition-slow:
+        300ms ease;
+
+    --cherry-transition-smooth:
+        500ms cubic-bezier(0.22, 1, 0.36, 1);
+
+
+    /* =====================================================
+       11. CANVAS
+       ===================================================== */
+
+    --cherry-canvas-width: 480px;
+    --cherry-canvas-height: 1920px;
+
+    --cherry-canvas-radius: 0;
+
+
+    /* =====================================================
+       12. WIDGET DEFAULTS
+       ===================================================== */
+
+    --cherry-widget-padding: 20px;
+
+    --cherry-widget-radius:
+        var(--cherry-radius-large);
+
+    --cherry-widget-gap:
+        var(--cherry-space-md);
+
+    --cherry-widget-border:
+        1px solid rgba(255, 255, 255, 0.18);
+
+
+    /* =====================================================
+       13. CONTROLS
+       ===================================================== */
+
+    --cherry-control-height: 64px;
+
+    --cherry-slider-height: 6px;
+
+    --cherry-control-radius:
+        var(--cherry-radius-medium);
+
+
+    /* =====================================================
+       14. SYSTEM METRICS
+       ===================================================== */
+
+    --cherry-metric-size: 150px;
+
+    --cherry-metric-stroke: 8px;
+
+    --cherry-metric-background:
+        rgba(0, 0, 0, 0.07);
+
+    --cherry-metric-progress:
+        var(--cherry-blue);
+
+
+    /* =====================================================
+       15. MEDIA
+       ===================================================== */
+
+    --cherry-media-radius:
+        var(--cherry-radius-xl);
+
+    --cherry-media-artwork-radius:
+        var(--cherry-radius-large);
+
+    --cherry-media-overlay:
+        rgba(20, 20, 24, 0.58);
+
+    --cherry-media-progress-height: 5px;
+
+
+    /* =====================================================
+       16. Z-INDEX
+       ===================================================== */
+
+    --cherry-z-background: 0;
+    --cherry-z-widget: 10;
+    --cherry-z-overlay: 100;
+    --cherry-z-editor: 1000;
+}

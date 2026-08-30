@@ -1,88 +1,196 @@
+/* =========================================================
+   CHERRY — CANVAS
+   Contenedor y administrador de widgets
+   ========================================================= */
+
+import { Grid } from "./layout/Grid.js";
+
+
 export class Canvas {
-    constructor(container, config = {}) {
-        if (!container) {
-            throw new Error("Canvas: no se proporcionó un contenedor.");
+
+    constructor(config = {}) {
+
+        /* -------------------------------------------------
+           CONFIGURACIÓN
+           ------------------------------------------------- */
+
+        this.width =
+            config.width ?? 480;
+
+        this.height =
+            config.height ?? 1920;
+
+
+        /* -------------------------------------------------
+           GRID
+           ------------------------------------------------- */
+
+        this.grid =
+            config.grid ??
+            new Grid({
+
+                columns:
+                    config.columns ?? 4,
+
+                rows:
+                    config.rows ?? 16,
+
+                width:
+                    this.width,
+
+                height:
+                    this.height,
+
+                gap:
+                    config.gap ?? 12
+            });
+
+
+        /* -------------------------------------------------
+           WIDGETS
+           ------------------------------------------------- */
+
+        this.widgets = [];
+
+
+        /* -------------------------------------------------
+           ELEMENTO DOM
+           ------------------------------------------------- */
+
+        this.element =
+            document.querySelector(
+                "#cherry-canvas"
+            );
+
+
+        if (!this.element) {
+
+            throw new Error(
+                "No se encontró #cherry-canvas"
+            );
         }
 
-        this.container = container;
-
-        this.width = config.width ?? 480;
-        this.height = config.height ?? 1920;
-
-        this.widgets = new Map();
 
         this.setup();
     }
 
-    setup() {
-        this.container.classList.add("cherry-canvas");
 
-        this.container.style.position = "relative";
-        this.container.style.width = `${this.width}px`;
-        this.container.style.height = `${this.height}px`;
+    /* =====================================================
+       CONFIGURAR CANVAS
+       ===================================================== */
+
+    setup() {
+
+        this.element.style.width =
+            `${this.width}px`;
+
+        this.element.style.height =
+            `${this.height}px`;
     }
+
+
+    /* =====================================================
+       AÑADIR WIDGET
+       ===================================================== */
 
     addWidget(widget) {
-        if (!widget) {
-            throw new Error("Canvas: se intentó añadir un widget inválido.");
+
+        if (!widget.element) {
+            widget.createElement();
         }
 
-        if (this.widgets.has(widget.id)) {
-            throw new Error(
-                `Canvas: ya existe un widget con el ID "${widget.id}".`
+
+        /* ---------------------------------------------
+           CALCULAR GEOMETRÍA
+           --------------------------------------------- */
+
+        const geometry =
+            this.grid.getGeometry(
+                widget.layout
             );
-        }
 
-        this.widgets.set(widget.id, widget);
 
-        widget.mount(this.container);
+        /* ---------------------------------------------
+           APLICAR GEOMETRÍA
+           --------------------------------------------- */
+
+        widget.setGeometry(
+            geometry
+        );
+
+
+        /* ---------------------------------------------
+           RENDERIZAR
+           --------------------------------------------- */
+
+        widget.render();
+
+
+        /* ---------------------------------------------
+           INSERTAR
+           --------------------------------------------- */
+
+        this.element.appendChild(
+            widget.element
+        );
+
+
+        this.widgets.push(widget);
+
+
+        return widget;
     }
 
-    removeWidget(widgetId) {
-        const widget = this.widgets.get(widgetId);
 
-        if (!widget) {
+    /* =====================================================
+       ACTUALIZAR POSICIÓN / TAMAÑO
+       ===================================================== */
+
+    updateWidgetLayout(widget) {
+
+        const geometry =
+            this.grid.getGeometry(
+                widget.layout
+            );
+
+        widget.setGeometry(
+            geometry
+        );
+    }
+
+
+    /* =====================================================
+       CAMBIAR LAYOUT DE UN WIDGET
+       ===================================================== */
+
+    setWidgetLayout(widget, layout) {
+
+        widget.setLayout(layout);
+
+        this.updateWidgetLayout(widget);
+    }
+
+
+    /* =====================================================
+       ELIMINAR WIDGET
+       ===================================================== */
+
+    removeWidget(widget) {
+
+        const index =
+            this.widgets.indexOf(widget);
+
+
+        if (index === -1) {
             return;
         }
 
+
         widget.destroy();
 
-        this.widgets.delete(widgetId);
-    }
-
-    getWidget(widgetId) {
-        return this.widgets.get(widgetId);
-    }
-
-    hasWidget(widgetId) {
-        return this.widgets.has(widgetId);
-    }
-
-    clear() {
-        for (const widget of this.widgets.values()) {
-            widget.destroy();
-        }
-
-        this.widgets.clear();
-    }
-
-    resize(width, height) {
-        this.width = width;
-        this.height = height;
-
-        this.container.style.width = `${width}px`;
-        this.container.style.height = `${height}px`;
-    }
-
-    getWidgetCount() {
-        return this.widgets.size;
-    }
-
-    destroy() {
-        this.clear();
-
-        this.container.classList.remove("cherry-canvas");
-
-        this.container.innerHTML = "";
+        this.widgets.splice(
+            index,
+            1
+        );
     }
 }
