@@ -1,30 +1,840 @@
 /* =========================================================
-   CHERRY — VISUAL WIDGET
+   CHERRY — MEDIA VISUAL WIDGET
    ========================================================= */
 
-.widget-media-visual {
+
+/* =========================================================
+   01. BASE
+   ========================================================= */
+
+.cherry-media-visual {
+
+    display: flex;
+
     width: 100%;
     height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
     overflow: hidden;
-    border-radius: var(--cherry-widget-radius);
-    background: var(--cherry-gray-100);
+
+    position: relative;
+
+    color:
+        var(--cherry-text-primary);
+
 }
 
-.widget-media-visual img,
-.widget-media-visual video {
+
+/* =========================================================
+   02. CONTAINER
+   ========================================================= */
+
+.cherry-media-visual-container {
+
+    display: flex;
+
+    flex-direction: column;
+
     width: 100%;
     height: 100%;
-    object-fit: cover;
+
+    min-width: 0;
+    min-height: 0;
+
+    overflow: hidden;
+
+}
+
+
+/* =========================================================
+   03. STAGE
+   ========================================================= */
+
+.cherry-media-visual-stage {
+
+    position: relative;
+
+    display: flex;
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    overflow: hidden;
+
+}
+
+
+/* =========================================================
+   04. SLIDE
+   ========================================================= */
+
+.cherry-media-visual-slide {
+
+    position: relative;
+
+    display: flex;
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    overflow: hidden;
+
+}
+
+
+/* =========================================================
+   05. IMAGE
+   ========================================================= */
+
+.cherry-media-visual-image {
+
     display: block;
-}
 
-.media-visual-placeholder {
     width: 100%;
     height: 100%;
-    display: grid;
-    place-items: center;
-    color: var(--cherry-text-secondary);
-    background: linear-gradient(135deg, rgba(147, 197, 253, 0.28), rgba(255, 255, 255, 0.12));
-    font-size: var(--cherry-font-size-sm);
-    font-weight: var(--cherry-weight-medium);
+
+    min-width: 0;
+    min-height: 0;
+
+    object-fit: cover;
+
+    object-position: center;
+
+    border: none;
+
+}
+
+
+/* =========================================================
+   06. VIDEO
+   ========================================================= */
+
+.cherry-media-visual-video {
+
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    object-fit: cover;
+
+    object-position: center;
+
+    border: none;
+
+}
+
+
+/* =========================================================
+   07. DEFAULT
+   ========================================================= */
+
+/*
+   Default intentionally stays clean.
+
+   No navigation.
+   No indicators.
+   No gallery.
+*/
+
+.cherry-media-visual[data-style="default"] {
+
+    background:
+        var(--cherry-white);
+
+}
+
+
+/* =========================================================
+   08. DEFAULT — MEDIA
+   ========================================================= */
+
+.cherry-media-visual[data-style="default"]
+.cherry-media-visual-image,
+
+.cherry-media-visual[data-style="default"]
+.cherry-media-visual-video {
+
+    border-radius:
+        var(--cherry-radius-medium);
+
+}
+
+
+/* =========================================================
+   09. NAVIGATION
+   ========================================================= */
+
+.cherry-media-visual-navigation {
+
+    position: absolute;
+
+    inset: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding:
+        0
+        var(--cherry-space-sm);
+
+    pointer-events: none;
+
+}
+
+
+/* =========================================================
+   10. NAVIGATION BUTTONS
+   ========================================================= */
+
+.cherry-media-visual-navigation button {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 36px;
+    height: 36px;
+
+    padding: 0;
+    margin: 0;
+
+    border: none;
+    border-radius:
+        var(--cherry-radius-pill);
+
+    background:
+        rgba(255, 255, 255, 0.72);
+
+    color:
+        var(--cherry-black);
+
+    font-size:
+        28px;
+
+    font-weight:
+        var(--cherry-weight-bold);
+
+    line-height: 0;
+
+    text-align: center;
+
+    cursor: pointer;
+
+    pointer-events: auto;
+
+    opacity: 0;
+
+    transform:
+        scale(0.92);
+
+    transition:
+        opacity var(--cherry-transition-fast),
+        transform var(--cherry-transition-fast),
+        background var(--cherry-transition-fast);
+
+}
+
+/* =========================================================
+   11. NAVIGATION — HOVER
+   ========================================================= */
+
+.cherry-media-visual:hover
+.cherry-media-visual-navigation button {
+
+    opacity: 1;
+
+    transform:
+        scale(1);
+
+}
+
+
+/* =========================================================
+   12. NAVIGATION — HOVER BUTTON
+   ========================================================= */
+
+.cherry-media-visual-navigation button:hover {
+
+    background:
+        rgba(255, 255, 255, 0.92);
+
+}
+
+
+/* =========================================================
+   13. NAVIGATION — KEYBOARD
+   ========================================================= */
+
+.cherry-media-visual-navigation button:focus-visible {
+
+    opacity: 1;
+
+    transform:
+        scale(1);
+
+    outline:
+        2px solid
+        var(--cherry-blue);
+
+    outline-offset:
+        2px;
+
+}
+
+
+/* =========================================================
+   14. INDICATORS
+   ========================================================= */
+
+.cherry-media-visual-indicators {
+
+    position: absolute;
+
+    left: 50%;
+    bottom: var(--cherry-space-sm);
+
+    display: flex;
+
+    align-items: center;
+
+    gap:
+        var(--cherry-space-2xs);
+
+    transform:
+        translateX(-50%);
+
+}
+
+
+/* =========================================================
+   15. INDICATOR
+   ========================================================= */
+
+.cherry-media-visual-indicator {
+
+    width: 6px;
+    height: 6px;
+
+    padding: 0;
+
+    border: none;
+
+    border-radius:
+        var(--cherry-radius-pill);
+
+    background:
+        rgba(255, 255, 255, 0.55);
+
+    cursor: pointer;
+
+    transition:
+
+        width
+        var(--cherry-transition-fast),
+
+        background
+        var(--cherry-transition-fast);
+
+}
+
+
+/* =========================================================
+   16. ACTIVE INDICATOR
+   ========================================================= */
+
+.cherry-media-visual-indicator.active {
+
+    width: 18px;
+
+    background:
+        var(--cherry-white);
+
+}
+
+
+/* =========================================================
+   17. GALLERY
+   ========================================================= */
+
+.cherry-media-visual-gallery {
+
+    display: flex;
+
+    flex-shrink: 0;
+
+    width: 100%;
+
+    gap:
+        var(--cherry-space-xs);
+
+    padding:
+        var(--cherry-space-xs);
+
+    overflow-x: auto;
+
+    overflow-y: hidden;
+
+}
+
+
+/* =========================================================
+   18. THUMBNAIL
+   ========================================================= */
+
+.cherry-media-visual-thumbnail {
+
+    position: relative;
+
+    flex:
+        0 0 auto;
+
+    width: 56px;
+    height: 56px;
+
+    padding: 0;
+
+    overflow: hidden;
+
+    border: none;
+
+    border-radius:
+        var(--cherry-radius-small);
+
+    background:
+        var(--cherry-gray-100);
+
+    cursor: pointer;
+
+}
+
+
+/* =========================================================
+   19. THUMBNAIL IMAGE
+   ========================================================= */
+
+.cherry-media-visual-thumbnail img {
+
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+}
+
+
+/* =========================================================
+   20. ACTIVE THUMBNAIL
+   ========================================================= */
+
+.cherry-media-visual-thumbnail.active {
+
+    outline:
+        2px solid
+        var(--cherry-blue);
+
+    outline-offset:
+        -2px;
+
+}
+
+
+/* =========================================================
+   21. REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .cherry-media-visual-navigation button,
+    .cherry-media-visual-indicator {
+
+        transition: none;
+
+    }
+
+}
+
+/* =========================================================
+   MEDIA VISUAL — RESPONSIVE BASE
+   ========================================================= */
+
+.cherry-media-visual-stage {
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    aspect-ratio: auto;
+
+}
+
+
+/* =========================================================
+   MEDIA
+   ========================================================= */
+
+.cherry-media-visual-image,
+.cherry-media-visual-video {
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    object-fit: cover;
+    object-position: center;
+
+}
+/* =========================================================
+   SLIDESHOW
+   ========================================================= */
+
+.cherry-media-visual[data-style="slideshow"] {
+
+    position: relative;
+
+    overflow: hidden;
+
+}
+
+
+/* =========================================================
+   STAGE
+   ========================================================= */
+
+.cherry-media-visual[data-style="slideshow"]
+.cherry-media-visual-stage {
+
+    flex: 1;
+
+    border-radius:
+        var(--cherry-radius-medium);
+
+}
+
+
+/* =========================================================
+   IMAGE
+   ========================================================= */
+
+.cherry-media-visual[data-style="slideshow"]
+.cherry-media-visual-image,
+
+.cherry-media-visual[data-style="slideshow"]
+.cherry-media-visual-video {
+
+    border-radius: inherit;
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+.cherry-media-visual[data-style="slideshow"]
+.cherry-media-visual-navigation {
+
+    opacity: 0;
+
+    transition:
+        opacity var(--cherry-transition-fast);
+
+}
+
+
+.cherry-media-visual[data-style="slideshow"]:hover
+.cherry-media-visual-navigation,
+
+.cherry-media-visual[data-style="slideshow"]:focus-within
+.cherry-media-visual-navigation {
+
+    opacity: 1;
+
+}
+
+
+/* =========================================================
+   INDICATORS
+   ========================================================= */
+
+.cherry-media-visual[data-style="slideshow"]
+.cherry-media-visual-indicators {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    bottom:
+        var(--cherry-space-md);
+
+}
+
+
+/* =========================================================
+   DOT
+   ========================================================= */
+
+.cherry-media-visual[data-style="slideshow"]
+.cherry-media-visual-indicator {
+
+    width: 6px;
+    height: 6px;
+
+    border-radius:
+        var(--cherry-radius-pill);
+
+    background:
+        rgba(255,255,255,.55);
+
+    transition:
+        width var(--cherry-transition-fast),
+        background var(--cherry-transition-fast);
+
+}
+
+
+/* =========================================================
+   ACTIVE
+   ========================================================= */
+
+.cherry-media-visual[data-style="slideshow"]
+.cherry-media-visual-indicator.active {
+
+    width: 22px;
+
+    background:
+        var(--cherry-white);
+
+}
+
+
+/* =========================================================
+   GALLERY
+   ========================================================= */
+
+.cherry-media-visual[data-style="gallery"] {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap:
+        var(--cherry-space-xs);
+
+}
+
+
+/* =========================================================
+   MAIN IMAGE
+   ========================================================= */
+
+.cherry-media-visual[data-style="gallery"]
+.cherry-media-visual-stage {
+
+    flex: 1;
+
+    min-height: 0;
+
+    border-radius:
+        var(--cherry-radius-medium);
+
+    overflow: hidden;
+
+}
+
+
+.cherry-media-visual[data-style="gallery"]
+.cherry-media-visual-image,
+
+.cherry-media-visual[data-style="gallery"]
+.cherry-media-visual-video {
+
+    border-radius: inherit;
+
+}
+
+
+/* =========================================================
+   HIDE INDICATORS
+   ========================================================= */
+
+.cherry-media-visual[data-style="gallery"]
+.cherry-media-visual-indicators {
+
+    display: none;
+
+}
+
+
+/* =========================================================
+   THUMBNAILS
+   ========================================================= */
+
+.cherry-media-visual[data-style="gallery"]
+.cherry-media-visual-gallery {
+
+    display: flex;
+
+    flex-shrink: 0;
+
+    width: 100%;
+
+    gap:
+        var(--cherry-space-xs);
+
+    padding: 0;
+
+    overflow-x: auto;
+
+    scrollbar-width: none;
+
+}
+
+
+.cherry-media-visual[data-style="gallery"]
+.cherry-media-visual-gallery::-webkit-scrollbar {
+
+    display: none;
+
+}
+
+
+/* =========================================================
+   THUMBNAIL
+   ========================================================= */
+
+.cherry-media-visual[data-style="gallery"]
+.cherry-media-visual-thumbnail {
+
+    flex: 0 0 auto;
+
+    width: 58px;
+    height: 58px;
+
+    border-radius:
+        var(--cherry-radius-small);
+
+    overflow: hidden;
+
+    opacity: .7;
+
+    transition:
+        opacity var(--cherry-transition-fast),
+        transform var(--cherry-transition-fast);
+
+}
+
+
+.cherry-media-visual[data-style="gallery"]
+.cherry-media-visual-thumbnail:hover {
+
+    opacity: 1;
+
+    transform:
+        translateY(-2px);
+
+}
+
+
+/* =========================================================
+   ACTIVE
+   ========================================================= */
+
+.cherry-media-visual[data-style="gallery"]
+.cherry-media-visual-thumbnail.active {
+
+    opacity: 1;
+
+    outline:
+        2px solid var(--cherry-blue);
+
+    outline-offset:
+        2px;
+
+}
+
+
+/* Mini */
+.cherry-media-visual[data-size="mini"]
+.cherry-media-visual-navigation {
+
+    padding:
+        0
+        var(--cherry-space-2xs);
+
+}
+
+.cherry-media-visual[data-size="mini"]
+.cherry-media-visual-navigation button {
+
+    width: 30px;
+    height: 30px;
+
+    font-size: 23px;
+
+}
+
+/*small */
+
+.cherry-media-visual[data-size="small"]
+.cherry-media-visual-navigation button {
+
+    width: 32px;
+    height: 32px;
+
+    font-size: 25px;
+
+}
+
+.cherry-media-visual[data-size="medium"]
+.cherry-media-visual-navigation button {
+
+    width: 36px;
+    height: 36px;
+
+    font-size: 28px;
+
+}
+
+.cherry-media-visual[data-size="large"]
+.cherry-media-visual-navigation button {
+
+    width: 40px;
+    height: 40px;
+
+    font-size: 31px;
+
+}
+
+.cherry-media-visual[data-size="giant"]
+.cherry-media-visual-navigation button {
+
+    width: 44px;
+    height: 44px;
+
+    font-size: 34px;
+
 }

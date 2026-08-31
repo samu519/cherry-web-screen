@@ -1,0 +1,798 @@
+/* =========================================================
+   CHERRY — TOGGLE WIDGET
+   ========================================================= */
+
+
+/* =========================================================
+   WIDGET ROOT
+   ========================================================= */
+
+.cherry-widget.cherry-toggle {
+
+    min-width: 0;
+    min-height: 0;
+
+
+    box-sizing: border-box;
+
+    overflow: hidden;
+
+    color: #111111;  
+
+    
+
+}
+
+.cherry-widget.cherry-toggle[data-size="mini"]{
+
+    min-width: 0;
+    min-height: 0;
+
+    width: 60px;
+    height: 60px;
+    max-width: 84px;
+    max-height: 84px;
+
+    box-sizing: border-box;
+
+    overflow: hidden;
+
+    color: rgb(0, 62, 179);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    place-self: center;
+    
+
+}
+/* =========================================================
+   TOGGLE BUTTON — BASE
+   ========================================================= */
+
+.cherry-toggle-button {
+
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    box-sizing: border-box;
+
+    border: 1px solid
+        rgba(255, 255, 255, 0.10);
+
+    padding: 10px;
+
+    border-radius: 20px;
+
+    background:
+        rgba(255, 255, 255, 0.075);
+
+    color: inherit;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 24px
+        rgba(0, 0, 0, 0.22),
+
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.08);
+
+    backdrop-filter:
+        blur(16px);
+
+    -webkit-backdrop-filter:
+        blur(16px);
+
+    transition:
+        background 160ms ease,
+        box-shadow 160ms ease,
+        transform 160ms ease;
+
+}
+
+
+/* =========================================================
+   HOVER
+   ========================================================= */
+
+.cherry-toggle-button:hover {
+
+    transform:
+        scale(1.02);
+
+}
+
+
+/* =========================================================
+   ICON
+   ========================================================= */
+
+.cherry-toggle-icon {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 auto;
+
+    width: 28px;
+    height: 28px;
+
+    font-size: 17px;
+
+    line-height: 1;
+
+}
+
+
+/* =========================================================
+   LABEL
+   ========================================================= */
+
+.cherry-toggle-label {
+
+    min-width: 0;
+    max-width: 100%;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    line-height: 1.15;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+}
+
+/* =========================================================
+   MINI
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="mini"] {
+
+    position: relative;
+
+    width: 70%;
+    height: 70%;
+
+    min-width: 0;
+    min-height: 0;
+
+    overflow: hidden;
+
+}
+
+
+/* =========================================================
+   MINI BUTTON
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="mini"]
+.cherry-toggle-button {
+
+    position: absolute;
+
+    width: var(--toggle-mini-size);
+    height: var(--toggle-mini-size);
+
+    min-width: 0;
+    min-height: 0;
+
+    max-width: 100%;
+    max-height: 100%;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    padding: 0;
+
+    border-radius: 50%;
+
+    box-sizing: border-box;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+}
+
+
+/* =========================================================
+   MINI ICON
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="mini"]
+.cherry-toggle-icon {
+
+    width: 65px;
+    height: 60px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+}
+
+
+/* =========================================================
+   MINI LABEL
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="mini"]
+.cherry-toggle-label {
+
+    display: none;
+
+}
+
+/* =========================================================
+   SMALL — 2 × 1
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="small"] {
+
+    width: 120%;
+    height: 120%;
+
+    min-width: 100;
+    min-height: 0;
+
+    box-sizing: border-box;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: flex-start;
+
+    overflow: hidden;
+
+    padding: 0;
+
+}
+
+
+/* =========================================================
+   SMALL — BUTTON / CONTENEDOR
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="small"]
+.cherry-toggle-button {
+
+    width: 120%;
+    height: 120%;
+
+    min-width: 80%;
+    min-height: 80%;
+
+
+    box-sizing: border-box;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-start;
+
+    gap: 10px;
+
+    border: none;
+
+    background: none;
+
+}
+
+
+/* =========================================================
+   SMALL — ICON CIRCLE
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="small"]
+.cherry-toggle-icon {
+
+    width: 52px;
+    height: 52px;
+
+    min-width: 38px;
+    min-height: 38px;
+
+    flex: 0 0 auto;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.085
+        );
+
+    box-shadow:
+
+        0 6px 18px
+        rgba(
+            0,
+            0,
+            0,
+            0.22
+        ),
+
+        inset 0 1px 0
+        rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
+
+    backdrop-filter:
+        blur(14px);
+
+    -webkit-backdrop-filter:
+        blur(14px);
+
+}
+
+
+/* =========================================================
+   SMALL — ACTIVE ICON
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="small"]
+.cherry-toggle-button.active
+.cherry-toggle-icon {
+
+    background:
+        rgba(
+            59,
+            130,
+            246,
+            0.30
+        );
+
+    box-shadow:
+
+        0 8px 20px
+        rgba(
+            59,
+            130,
+            246,
+            0.16
+        ),
+
+        inset 0 1px 0
+        rgba(
+            255,
+            255,
+            255,
+            0.10
+        );
+
+}
+
+
+/* =========================================================
+   SMALL — LABEL
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="small"]
+.cherry-toggle-label {
+
+    min-width: 0;
+
+    flex: 1;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    text-align: left;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+}
+
+
+/* =========================================================
+   SMALL — BUTTON HOVER
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="small"]
+.cherry-toggle-button:hover {
+
+    transform: none;
+
+}
+
+
+/* =========================================================
+   SMALL — BUTTON ACTIVE
+   ========================================================= */
+
+/*
+ * IMPORTANTE:
+ * En Small el estado activo NO pinta todo el widget.
+ * Solo el círculo.
+ */
+
+.cherry-widget.cherry-toggle[data-size="small"]
+.cherry-toggle-button.active {
+
+    background: transparent;
+
+    box-shadow: none;
+
+}
+
+
+
+/* =========================================================
+   MEDIUM — 2 × 2
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="medium"] {
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    box-sizing: border-box;
+
+    position: relative;
+
+    overflow: hidden;
+
+}
+
+
+/* =========================================================
+   MEDIUM — BUTTON
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="medium"]
+.cherry-toggle-button {
+
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    padding: 12px;
+
+    box-sizing: border-box;
+
+    border: none;
+
+    background: transparent;
+
+    box-shadow: none;
+
+}
+
+
+/* =========================================================
+   MEDIUM — ICON
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="medium"]
+.cherry-toggle-icon {
+
+    position: absolute;
+
+    top: 12px;
+    left: 12px;
+
+    width: 60px;
+    height: 60px;
+
+    min-width: 44px;
+    min-height: 44px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.085
+        );
+
+    box-shadow:
+
+        0 8px 22px
+        rgba(
+            0,
+            0,
+            0,
+            0.24
+        ),
+
+        inset 0 1px 0
+        rgba(
+            255,
+            255,
+            255,
+            0.09
+        );
+
+    backdrop-filter:
+        blur(16px);
+
+    -webkit-backdrop-filter:
+        blur(16px);
+
+}
+
+
+/* =========================================================
+   MEDIUM — ACTIVE
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="medium"]
+.cherry-toggle-button.active
+.cherry-toggle-icon {
+
+    background:
+        rgba(
+            59,
+            130,
+            246,
+            0.30
+        );
+
+    box-shadow:
+
+        0 8px 24px
+        rgba(
+            59,
+            130,
+            246,
+            0.18
+        ),
+
+        inset 0 1px 0
+        rgba(
+            255,
+            255,
+            255,
+            0.10
+        );
+
+}
+
+
+/* =========================================================
+   MEDIUM — LABEL
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="medium"]
+.cherry-toggle-label {
+
+    position: absolute;
+
+    right: 12px;
+    bottom: 10px;
+
+    max-width: 70%;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    font-size: 20px;
+
+    font-weight: 800;
+
+    text-align: right;
+
+}
+
+
+/* =========================================================
+   MEDIUM — HOVER
+   ========================================================= */
+
+.cherry-widget.cherry-toggle[data-size="medium"]
+.cherry-toggle-button:hover {
+
+    transform: none;
+
+    background: transparent;
+
+    box-shadow: none;
+
+}
+
+
+/* =========================================================
+   =========================================================
+   STYLE — BUTTON
+   =========================================================
+   ========================================================= */
+
+/*
+ * El widget permanece translúcido.
+ * Solo se ilumina el botón.
+ */
+
+.cherry-widget.cherry-toggle[data-style="button"]
+.cherry-toggle-button.active {
+
+    background:
+        rgba(
+            59,
+            130,
+            246,
+            0.30
+        );
+
+    border-color:
+        rgba(
+            59,
+            130,
+            246,
+            0.20
+        );
+
+    box-shadow:
+
+        0 10px 28px
+        rgba(
+            59,
+            130,
+            246,
+            0.16
+        ),
+
+        inset 0 1px 0
+        rgba(
+            255,
+            255,
+            255,
+            0.12
+        );
+
+}
+
+
+/* =========================================================
+   =========================================================
+   STYLE — WIDGET
+   =========================================================
+   ========================================================= */
+
+/*
+ * El botón queda transparente.
+ * El estado activo se pinta sobre
+ * el .cherry-widget completo.
+ */
+
+.cherry-widget.cherry-toggle[data-style="widget"] {
+
+    transition:
+        background 180ms ease,
+        box-shadow 180ms ease;
+
+}
+
+
+/* ---------------------------------------------------------
+   WIDGET — ACTIVE
+   --------------------------------------------------------- */
+
+.cherry-widget.cherry-toggle[data-style="widget"].active {
+
+    background:
+        rgba(
+            59,
+            130,
+            246,
+            0.30
+        );
+
+    box-shadow:
+
+        0 10px 30px
+        rgba(
+            59,
+            130,
+            246,
+            0.16
+        ),
+
+        inset 0 1px 0
+        rgba(
+            255,
+            255,
+            255,
+            0.12
+        );
+
+}
+
+
+/* ---------------------------------------------------------
+   WIDGET — BUTTON BECOMES TRANSPARENT
+   --------------------------------------------------------- */
+
+.cherry-widget.cherry-toggle[data-style="widget"]
+.cherry-toggle-button {
+
+    background:
+        transparent;
+
+    border-color:
+        transparent;
+
+    box-shadow:
+        none;
+
+}
+
+
+/* ---------------------------------------------------------
+   WIDGET — NO BUTTON TRANSFORM
+   --------------------------------------------------------- */
+
+.cherry.widget.cherry-toggle[data-style="widget"]
+.cherry-toggle-button:hover {
+
+    transform:
+        none;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE SAFETY
+   ========================================================= */
+
+.cherry-toggle-button,
+.cherry-toggle-icon,
+.cherry-toggle-label {
+
+    overflow:
+        hidden;
+
+}

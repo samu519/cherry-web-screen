@@ -1,10 +1,4 @@
-/* =========================================================
-   CHERRY — MEDIA VISUAL WIDGET
-   Imagen / GIF / Video
-   ========================================================= */
-
 import { Widget } from "../../core/widgets/Widget.js";
-
 
 export class MediaVisualWidget extends Widget {
 
@@ -12,215 +6,893 @@ export class MediaVisualWidget extends Widget {
 
         super({
             ...config,
-            type: "media-visual"
+            type: "mediaVisual"
         });
 
 
-        /* -------------------------------------------------
-           CONFIGURACIÓN
-           ------------------------------------------------- */
+        // =====================================================
+        // SETTINGS
+        // =====================================================
 
         this.settings = {
 
-            source:
-                config.settings?.source ?? null,
+            sizePreset: "medium",
+            style: "default",
+            autoplay: false,
+            interval: 5000,
+            loop: true,
+            transition: "fade",
+            showNavigation: true,
+            showIndicators: true,
+            ...this.settings,
 
-            type:
-                config.settings?.type ?? "image",
+            ...(config.style && {
+                style: config.style
+            }),
 
-            autoplay:
-                config.settings?.autoplay ?? true,
+            ...(config.autoplay !== undefined && {
+                autoplay: config.autoplay
+            }),
 
-            loop:
-                config.settings?.loop ?? true,
+            ...(config.interval !== undefined && {
+                interval: config.interval
+            }),
 
-            muted:
-                config.settings?.muted ?? true,
+            ...(config.loop !== undefined && {
+                loop: config.loop
+            })
 
-            objectFit:
-                config.settings?.objectFit ?? "cover"
+        };
+
+        // =====================================================
+        // VALIDATE STYLE BY SIZE
+        // =====================================================
+
+        if (
+            (config.size === "mini" ||
+            config.size === "small") &&
+            this.settings.style === "gallery"
+        ) {
+
+            this.settings.style =
+                "default";
+
+        }
+
+
+        // =====================================================
+        // STATE
+        // =====================================================
+
+        this.state = {
+
+            currentSlide: 0,
+
+            slides: [
+
+                {
+                    type: "image",
+                    src: "../../assets/media/portada1.jpg"
+                },
+
+                {
+                    type: "image",
+                    src: "../../assets/media/portada2.jpg"
+                },
+
+                {
+                    type: "gif",
+                    src: "../../assets/media/animation.gif"
+                }
+
+            ],
+
+            ...this.state
+
         };
 
 
-        /* -------------------------------------------------
-           ESTILO
-           ------------------------------------------------- */
+        // =====================================================
+        // SIZE PRESETS
+        // =====================================================
 
-        this.variant =
-            config.variant ?? "glass";
+        this.sizePresets = {
+
+            mini: {
+                columns: 2,
+                rows: 2
+            },
+
+            small: {
+                columns: 3,
+                rows: 2
+            },
+
+            medium: {
+                columns: 4,
+                rows: 3
+            },
+
+            large: {
+                columns: 4,
+                rows: 5
+            },
+
+            giant: {
+                columns: 4,
+                rows: 8
+            }
+
+        };
+
+
+        // =====================================================
+        // STYLES
+        // =====================================================
+
+        this.styles = {
+
+            default: {
+                name: "Default"
+            },
+
+            slideshow: {
+                name: "Slideshow"
+            },
+
+            gallery: {
+                name: "Gallery"
+            }
+
+        };
+
+
+        // =====================================================
+        // APPLY SIZE
+        // =====================================================
+
+        const selectedSize =
+            config.size ?? "medium";
+
+        const sizeConfig =
+            this.sizePresets[selectedSize];
+
+        if (sizeConfig) {
+
+            this.settings.sizePreset =
+                selectedSize;
+
+            this.setLayout({
+
+                ...sizeConfig,
+
+                ...config.layout
+
+            });
+
+        }
+
     }
 
 
-    /* =====================================================
-       RENDER
-       ===================================================== */
+    // =========================================================
+    // CREATE ELEMENT
+    // =========================================================
+
+    createElement() {
+
+        const element =
+            super.createElement();
+
+        element.classList.add(
+            "cherry-media-visual"
+        );
+
+        return element;
+
+    }
+
+
+    // =========================================================
+    // SET SIZE
+    // =========================================================
+
+    setSizePreset(size) {
+
+        const sizeConfig =
+            this.sizePresets[size];
+
+        if (!sizeConfig) {
+
+            console.warn(
+                `MediaVisualWidget: size "${size}" no está definido.`
+            );
+
+            return false;
+
+        }
+
+        this.settings.sizePreset =
+            size;
+
+
+        // =====================================================
+        // GALLERY RESTRICTION
+        // =====================================================
+
+        if (
+            (size === "mini" ||
+            size === "small") &&
+            this.settings.style === "gallery"
+        ) {
+
+            this.settings.style =
+                "default";
+
+        }
+
+
+        this.setLayout(
+            sizeConfig
+        );
+
+        this.updateAttributes();
+
+        this.render();
+
+        return true;
+
+    }
+
+
+    // =========================================================
+    // SET STYLE
+    // =========================================================
+
+    setStyle(style) {
+
+        const styleConfig =
+            this.styles[style];
+
+        if (!styleConfig) {
+
+            console.warn(
+                `MediaVisualWidget: style "${style}" no está definido.`
+            );
+
+            return false;
+
+        }
+
+        this.settings.style =
+            style;
+
+        this.updateAttributes();
+
+        this.render();
+
+        return true;
+
+    }
+
+
+    // =========================================================
+    // UPDATE ATTRIBUTES
+    // =========================================================
+
+    updateAttributes() {
+
+        if (!this.element) {
+            return;
+        }
+
+        this.element.dataset.size =
+            this.settings.sizePreset;
+
+        this.element.dataset.style =
+            this.settings.style;
+
+    }
+
+
+    // =========================================================
+    // RENDER
+    // =========================================================
 
     render() {
 
-        super.render();
+        if (!this.element) {
+            this.createElement();
+        }
 
-        this.element.classList.add(
-            "widget-media-visual"
-        );
-
-        this.element.classList.add(
-            `variant-${this.variant}`
-        );
-
-
-        this.renderMedia();
-    }
-
-
-    /* =====================================================
-       CREAR MEDIA
-       ===================================================== */
-
-    renderMedia() {
-
-        /* ---------------------------------------------
-           LIMPIAR CONTENIDO
-           --------------------------------------------- */
+        this.updateAttributes();
 
         this.element.innerHTML = "";
 
 
-        if (!this.settings.source) {
+        // =====================================================
+        // CONTAINER
+        // =====================================================
 
-            this.renderPlaceholder();
+        const container =
+            document.createElement("div");
 
-            return;
+        container.classList.add(
+            "cherry-media-visual-container"
+        );
+
+
+        // =====================================================
+        // STAGE
+        // =====================================================
+
+        const stage =
+            document.createElement("div");
+
+        stage.classList.add(
+            "cherry-media-visual-stage"
+        );
+
+
+        // =====================================================
+        // CURRENT MEDIA
+        // =====================================================
+
+        const slide =
+            this.createSlide(
+                this.state.currentSlide
+            );
+
+        stage.appendChild(
+            slide
+        );
+
+
+        // =====================================================
+        // NAVIGATION
+        // =====================================================
+
+        /*
+         * Las flechas pertenecen a los tres estilos.
+         *
+         * El CSS se encarga de ocultarlas hasta hacer hover.
+         */
+
+        if (
+            this.settings.showNavigation &&
+            this.state.slides.length > 1
+        ) {
+
+            const navigation =
+                this.createNavigation();
+
+            stage.appendChild(
+                navigation
+            );
+
         }
 
 
-        /* ---------------------------------------------
-           IMAGEN / GIF
-           --------------------------------------------- */
+        // =====================================================
+        // INDICATORS
+        // =====================================================
+
+        /*
+         * Los indicadores SOLO pertenecen
+         * al estilo slideshow.
+         */
 
         if (
-            this.settings.type === "image" ||
-            this.settings.type === "gif"
+            this.settings.showIndicators &&
+            this.settings.style === "slideshow" &&
+            this.state.slides.length > 1
+        ) {
+
+            const indicators =
+                this.createIndicators();
+
+            stage.appendChild(
+                indicators
+            );
+
+        }
+
+
+        // =====================================================
+        // ADD STAGE
+        // =====================================================
+
+        container.appendChild(
+            stage
+        );
+
+
+        // =====================================================
+        // GALLERY
+        // =====================================================
+
+        /*
+         * Gallery reemplaza los indicadores
+         * por miniaturas debajo de la imagen.
+         */
+
+        if (
+            this.settings.style ===
+            "gallery"
+        ) {
+
+            const gallery =
+                this.createGallery();
+
+            container.appendChild(
+                gallery
+            );
+
+        }
+
+
+        // =====================================================
+        // APPEND
+        // =====================================================
+
+        this.element.appendChild(
+            container
+        );
+
+    }
+
+
+    // =========================================================
+    // CREATE SLIDE
+    // =========================================================
+
+    createSlide(index) {
+
+        const slide =
+            document.createElement("div");
+
+        slide.classList.add(
+            "cherry-media-visual-slide"
+        );
+
+
+        const media =
+            this.state.slides[index];
+
+
+        if (!media) {
+            return slide;
+        }
+
+
+        // =====================================================
+        // IMAGE / GIF
+        // =====================================================
+
+        if (
+            media.type === "image" ||
+            media.type === "gif"
         ) {
 
             const image =
-    document.createElement("img");
+                document.createElement("img");
+
+            image.classList.add(
+                "cherry-media-visual-image"
+            );
 
             image.src =
-                this.settings.source;
+                media.src;
 
             image.alt =
-                "Cherry visual";
+                media.alt ?? "";
 
-            image.style.width =
-                "100%";
 
-            image.style.height =
-                "100%";
-
-            image.style.objectFit =
-                this.settings.objectFit;
-
-            this.element.appendChild(
+            slide.appendChild(
                 image
             );
-            image.style.display = "block";
-            return;
+
         }
 
 
-        /* ---------------------------------------------
-           VIDEO
-           --------------------------------------------- */
+        // =====================================================
+        // VIDEO
+        // =====================================================
 
         if (
-            this.settings.type === "video"
+            media.type === "video"
         ) {
 
             const video =
                 document.createElement("video");
 
+            video.classList.add(
+                "cherry-media-visual-video"
+            );
+
             video.src =
-                this.settings.source;
+                media.src;
 
-            video.autoplay =
-                this.settings.autoplay;
-
-            video.loop =
-                this.settings.loop;
-
-            video.muted =
-                this.settings.muted;
+            video.preload =
+                "metadata";
 
             video.playsInline =
                 true;
 
-            video.style.objectFit =
-                this.settings.objectFit;
+            video.controls =
+                true;
 
-            this.element.appendChild(
+
+            if (media.poster) {
+
+                video.poster =
+                    media.poster;
+
+            }
+
+
+            slide.appendChild(
                 video
             );
 
-            return;
         }
 
 
-        this.renderPlaceholder();
+        return slide;
+
     }
 
 
-    /* =====================================================
-       PLACEHOLDER
-       ===================================================== */
+    // =========================================================
+    // CREATE NAVIGATION
+    // =========================================================
 
-    renderPlaceholder() {
+    createNavigation() {
 
-        this.element.innerHTML = `
+        const navigation =
+            document.createElement("div");
 
-            <div class="media-visual-placeholder">
-
-                <span>
-                    No media
-                </span>
-
-            </div>
-
-        `;
-    }
-
-
-    /* =====================================================
-       CAMBIAR MEDIA
-       ===================================================== */
-
-    setSource(source, type = "image") {
-
-        this.settings.source =
-            source;
-
-        this.settings.type =
-            type;
-
-        this.renderMedia();
-    }
-
-
-    /* =====================================================
-       CAMBIAR VARIANTE
-       ===================================================== */
-
-    setVariant(variant) {
-
-        this.variant =
-            variant;
-
-        this.element.classList.remove(
-            "variant-glass",
-            "variant-solid"
+        navigation.classList.add(
+            "cherry-media-visual-navigation"
         );
 
-        this.element.classList.add(
-            `variant-${variant}`
+
+        // =====================================================
+        // PREVIOUS
+        // =====================================================
+
+        const previous =
+            document.createElement("button");
+
+        previous.type =
+            "button";
+
+        previous.classList.add(
+            "cherry-media-visual-previous"
         );
+
+        previous.textContent =
+            "‹";
+
+        previous.setAttribute(
+            "aria-label",
+            "Previous slide"
+        );
+
+        previous.addEventListener(
+            "click",
+            () => this.previousSlide()
+        );
+
+
+        // =====================================================
+        // NEXT
+        // =====================================================
+
+        const next =
+            document.createElement("button");
+
+        next.type =
+            "button";
+
+        next.classList.add(
+            "cherry-media-visual-next"
+        );
+
+        next.textContent =
+            "›";
+
+        next.setAttribute(
+            "aria-label",
+            "Next slide"
+        );
+
+        next.addEventListener(
+            "click",
+            () => this.nextSlide()
+        );
+
+
+        navigation.appendChild(
+            previous
+        );
+
+        navigation.appendChild(
+            next
+        );
+
+
+        return navigation;
+
     }
+
+
+    // =========================================================
+    // CREATE INDICATORS
+    // =========================================================
+
+    createIndicators() {
+
+        const indicators =
+            document.createElement("div");
+
+        indicators.classList.add(
+            "cherry-media-visual-indicators"
+        );
+
+
+        this.state.slides.forEach(
+            (_, index) => {
+
+                const indicator =
+                    document.createElement("button");
+
+                indicator.type =
+                    "button";
+
+                indicator.classList.add(
+                    "cherry-media-visual-indicator"
+                );
+
+
+                if (
+                    index ===
+                    this.state.currentSlide
+                ) {
+
+                    indicator.classList.add(
+                        "active"
+                    );
+
+                }
+
+
+                indicator.setAttribute(
+                    "aria-label",
+                    `Go to slide ${index + 1}`
+                );
+
+
+                indicator.addEventListener(
+                    "click",
+                    () =>
+                        this.goToSlide(index)
+                );
+
+
+                indicators.appendChild(
+                    indicator
+                );
+
+            }
+        );
+
+
+        return indicators;
+
+    }
+
+
+    // =========================================================
+    // CREATE GALLERY
+    // =========================================================
+
+    createGallery() {
+
+        const gallery =
+            document.createElement("div");
+
+        gallery.classList.add(
+            "cherry-media-visual-gallery"
+        );
+
+
+        this.state.slides.forEach(
+            (media, index) => {
+
+                const thumbnail =
+                    document.createElement("button");
+
+                thumbnail.type =
+                    "button";
+
+                thumbnail.classList.add(
+                    "cherry-media-visual-thumbnail"
+                );
+
+
+                if (
+                    index ===
+                    this.state.currentSlide
+                ) {
+
+                    thumbnail.classList.add(
+                        "active"
+                    );
+
+                }
+
+
+                const image =
+                    document.createElement("img");
+
+                /*
+                 * Si en el futuro tenemos thumbnails
+                 * específicos, los usamos.
+                 *
+                 * Si no, usamos el propio media.src.
+                 */
+
+                image.src =
+                    media.thumbnail ??
+                    media.src;
+
+                image.alt =
+                    media.alt ?? "";
+
+
+                thumbnail.appendChild(
+                    image
+                );
+
+
+                thumbnail.addEventListener(
+                    "click",
+                    () =>
+                        this.goToSlide(index)
+                );
+
+
+                gallery.appendChild(
+                    thumbnail
+                );
+
+            }
+        );
+
+
+        return gallery;
+
+    }
+
+
+    // =========================================================
+    // GO TO SLIDE
+    // =========================================================
+
+    goToSlide(index) {
+
+        if (
+            index < 0 ||
+            index >=
+            this.state.slides.length
+        ) {
+
+            return;
+
+        }
+
+
+        this.state.currentSlide =
+            index;
+
+
+        this.render();
+
+    }
+
+
+    // =========================================================
+    // PREVIOUS
+    // =========================================================
+
+    previousSlide() {
+
+        let index =
+            this.state.currentSlide - 1;
+
+
+        if (index < 0) {
+
+            if (this.settings.loop) {
+
+                index =
+                    this.state.slides.length - 1;
+
+            } else {
+
+                index = 0;
+
+            }
+
+        }
+
+
+        this.goToSlide(
+            index
+        );
+
+    }
+
+
+    // =========================================================
+    // NEXT
+    // =========================================================
+
+    nextSlide() {
+
+        let index =
+            this.state.currentSlide + 1;
+
+
+        if (
+            index >=
+            this.state.slides.length
+        ) {
+
+            if (this.settings.loop) {
+
+                index = 0;
+
+            } else {
+
+                index =
+                    this.state.slides.length - 1;
+
+            }
+
+        }
+
+
+        this.goToSlide(
+            index
+        );
+
+    }
+
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
+
+    update() {
+
+        super.update();
+
+        this.render();
+
+    }
+
+
+    // =========================================================
+    // DESTROY
+    // =========================================================
+
+    destroy() {
+
+        super.destroy();
+
+    }
+
 }
+

@@ -41,7 +41,7 @@ export class MediaWidget extends Widget {
             artist: "The Weeknd",
 
             artwork:
-                "../../assets/media/portada2.jpg",
+                "../../assets/media/portada.png",
 
             progress: 42,
 

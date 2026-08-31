@@ -18,6 +18,9 @@ import { MediaVisualWidget }
 import { TextWidget }
     from "../widgets/text/textwidget.js";
 
+import {ToggleWidget}
+    from "../widgets/togglewidget.js/togglewidget.js"
+
 const canvas = new Canvas({
     width: 480,
     height: 1920,
@@ -39,7 +42,7 @@ const clock = new ClockWidget({
 
 
 const media = new MediaWidget({
-    size: "medium",
+    size: "large",
     style: "artworkProtagonist",
     layout: {
         row: 2,
@@ -48,50 +51,71 @@ const media = new MediaWidget({
 
 
 const system = new SystemWidget({
-    size: "large",
+    size: "cardvertical",
     style: "circular",
     layout: {
-        row: 6,
+        row: 9,
     }
 });
 
 
 const controls = new ControlsWidget({
+    size: "mini",
+    style: "buttons",
     layout: {
-        column: 0,
-        row: 12,
-        columns: 4,
-        rows: 3
+        row: 6,
     }
 });
 
 const mediaVisual = new MediaVisualWidget({
-
+    size: "medium",
+    style: "gallery",
     layout: {
-        column: 2,
-        row: 15,
-        columns: 2,
-        rows: 2
+        column: 0,
+        row: 10,
     },
 
-    variant: "translucid",
-
-    settings: {
-        source: "assets/media/cherry.jpg",
-        type: "image",
-        objectFit: "contain"
-    }
 });
 
 const text = new TextWidget({
     size: "small",
     layout: {
         column: 2,
-        row: 4,
+        row: 13,
     }
 });
 
+const wifi1 =
+    new ToggleWidget({
+        id: "wifi",
+        label: "Wi-Fi",
+        style: "widget",
+        size: "small",
+        layout: {
+            column: 2,
+            row: 6
+        }
+    });
+
+const wifi2 =
+    new ToggleWidget({
+        id: "bluetooth",
+        label: "Bluetooth",
+        style: "widget",
+        size: "medium",
+        layout: {
+            column: 2,
+            row: 7
+        }
+    });
+
+
+
+
+
 console.log(media.layout);
+canvas.addWidget(wifi1);
+canvas.addWidget(wifi2);
 canvas.addWidget(mediaVisual);
 canvas.addWidget(clock);
 canvas.addWidget(media);
