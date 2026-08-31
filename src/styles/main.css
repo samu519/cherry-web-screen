@@ -146,60 +146,11 @@ body {
 
 
 
-/* ---------------------------------------------------------
+/* --------------------------------------------------------
    6. SYSTEM
    --------------------------------------------------------- */
 
-.cherry-system {
-    display: grid;
 
-    grid-template-columns: repeat(2, 1fr);
-
-    gap: var(--cherry-space-md);
-
-    padding: var(--cherry-space-lg);
-
-    border-radius: var(--cherry-radius-large);
-
-    background: var(--cherry-glass-soft);
-}
-
-.cherry-system-metric {
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    flex-direction: column;
-
-    min-height: 150px;
-
-    border-radius: var(--cherry-radius-xl);
-
-    background: var(--cherry-glass-light);
-
-    box-shadow: var(--cherry-shadow-soft);
-}
-
-.cherry-system-metric-name {
-    margin-bottom: var(--cherry-space-sm);
-
-    font-size: var(--cherry-font-size-sm);
-    font-weight: var(--cherry-weight-semibold);
-
-    letter-spacing: 1px;
-
-    color: var(--cherry-text-secondary);
-}
-
-.cherry-system-metric-value {
-    font-size: var(--cherry-font-size-2xl);
-    font-weight: var(--cherry-weight-bold);
-
-    letter-spacing: -1.5px;
-
-    color: var(--cherry-text-primary);
-}
 /* =========================================================
    WIDGET SIZES
    ========================================================= */

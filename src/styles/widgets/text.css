@@ -2,35 +2,371 @@
    CHERRY — TEXT WIDGET
    ========================================================= */
 
-.widget-text {
+
+/* =========================================================
+   01. BASE
+   ========================================================= */
+
+.cherry-text {
+
+    container: cherry-text / size;
+
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    overflow: hidden;
+
+    box-sizing: border-box;
+
+    color:
+        var(--cherry-text-primary);
+}
+
+
+/* =========================================================
+   02. CONTENT
+   ========================================================= */
+
+.cherry-text-content {
+
+    display: flex;
+    flex: 1;
+
+    min-width: 0;
+    min-height: 0;
+
+    width: 100%;
+    height: 100%;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   03. TEXT
+   ========================================================= */
+
+.cherry-text-value {
+
+    margin: 0;
+
+    min-width: 0;
+    min-height: 0;
+
+    color:
+        var(--cherry-text-primary);
+
+    font-weight:
+        var(--cherry-weight-medium);
+
+    line-height: 1.2;
+
+    overflow: hidden;
+
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+
+    font-size:
+    clamp(
+        14px,
+        calc(5cqi * var(--text-scale)),
+        72px
+    );
+}
+
+/* =========================================================
+   MINI — 2 × 1
+   ========================================================= */
+
+.cherry-text[data-size="mini"] {
+
+    padding:
+        var(--cherry-space-sm);
+}
+
+.cherry-text[data-size="mini"]
+.cherry-text-content {
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+}
+
+.cherry-text[data-size="mini"]
+.cherry-text-value {
+
+    font-size: var(--cherry-font-size-sm);
+
+    font-weight:
+        var(--cherry-weight-medium);
+
+    line-height: 1.1;
+}
+
+/* =========================================================
+   SMALL — 2 × 2
+   ========================================================= */
+
+.cherry-text[data-size="small"] {
+
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
-    padding: var(--cherry-space-md);
-    overflow: hidden;
+
+    padding:
+        var(--cherry-space-md);
+
+    box-sizing: border-box;
 }
 
-.text-widget-content {
+
+.cherry-text[data-size="small"]
+.cherry-text-content {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
     width: 100%;
-    display: block;
-    white-space: pre-wrap;
-    word-break: break-word;
-    letter-spacing: var(--cherry-tracking-tight);
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    text-align: center;
+}
+
+
+.cherry-text[data-size="small"]
+.cherry-text-value {
+
+    width: 100%;
+    max-width: 100%;
+
+    margin: 0;
+
+    font-size: 
+     var(--cherry-font-size-sm);
+
+    font-weight:
+        var(--cherry-weight-medium);
+
+    line-height: 1.2;
+
+    color:
+        var(--cherry-text-primary);
+
+    overflow: hidden;
+    overflow-wrap: break-word;
+}
+
+/* =========================================================
+   MEDIUM — 3 × 2
+   ========================================================= */
+
+.cherry-text[data-size="medium"] {
+
+    padding:
+        var(--cherry-space-lg);
+}
+
+.cherry-text[data-size="medium"]
+.cherry-text-content {
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+}
+
+.cherry-text[data-size="medium"]
+.cherry-text-value {
+
+    max-width: 95%;
+
+    font-size:
+        var(--cherry-font-size-lg);
+
+    font-weight:
+        var(--cherry-weight-medium);
+
+    line-height: 1.15;
+}
+
+/* =========================================================
+   LARGE — 3 × 3
+   ========================================================= */
+
+.cherry-text[data-size="large"] {
+
+    padding:
+        var(--cherry-space-xl);
+}
+
+.cherry-text[data-size="large"]
+.cherry-text-content {
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+}
+
+.cherry-text[data-size="large"]
+.cherry-text-value {
+
+    max-width: 90%;
+
+    font-size:
+        var(--cherry-font-size-xl);
+
+    font-weight:
+        var(--cherry-weight-bold);
+
+    line-height: 1.1;
+}
+
+/* =========================================================
+   CARD VERTICAL — 2 × 4
+   ========================================================= */
+
+.cherry-text[data-size="cardvertical"] {
+
+    padding:
+        var(--cherry-space-xl);
+}
+
+.cherry-text[data-size="cardvertical"]
+.cherry-text-content {
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+}
+
+.cherry-text[data-size="cardvertical"]
+.cherry-text-value {
+
+    max-width: 90%;
+
+    font-size:
+        var(--cherry-font-size-lg);
+
+    font-weight:
+        var(--cherry-weight-medium);
+
     line-height: 1.2;
 }
 
-.variant-glass {
-    background: rgba(255, 255, 255, 0.14);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: var(--cherry-shadow-soft);
-    backdrop-filter: blur(var(--cherry-blur-small));
-    -webkit-backdrop-filter: blur(var(--cherry-blur-small));
+/* =========================================================
+   CARD HORIZONTAL — 4 × 2
+   ========================================================= */
+
+.cherry-text[data-size="cardhorizontal"] {
+
+    padding:
+        var(--cherry-space-lg)
+        var(--cherry-space-xl);
 }
 
-.variant-solid {
-    background: var(--cherry-solid-background);
-    border: 1px solid var(--cherry-solid-border);
-    box-shadow: var(--cherry-shadow-xs);
+.cherry-text[data-size="cardhorizontal"]
+.cherry-text-content {
+
+    align-items: center;
+    justify-content: flex-start;
+
+    text-align: left;
+}
+
+.cherry-text[data-size="cardhorizontal"]
+.cherry-text-value {
+
+    max-width: 100%;
+
+    font-size:
+        var(--cherry-font-size-lg);
+
+    font-weight:
+        var(--cherry-weight-medium);
+
+    line-height: 1.15;
+}
+
+/* =========================================================
+   CARD — 3 × 4
+   ========================================================= */
+
+.cherry-text[data-size="card"] {
+
+    padding:
+        var(--cherry-space-xl);
+}
+
+.cherry-text[data-size="card"]
+.cherry-text-content {
+
+    align-items: flex-start;
+    justify-content: center;
+
+    text-align: left;
+}
+
+.cherry-text[data-size="card"]
+.cherry-text-value {
+
+    width: 100%;
+
+    font-size:
+        var(--cherry-font-size-lg);
+
+    font-weight:
+        var(--cherry-weight-regular);
+
+    line-height: 1.35;
+}
+
+/* =========================================================
+   GIANT — 4 × 6
+   ========================================================= */
+
+.cherry-text[data-size="giant"] {
+
+    padding:
+        var(--cherry-space-2xl);
+}
+
+.cherry-text[data-size="giant"]
+.cherry-text-content {
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+}
+
+.cherry-text[data-size="giant"]
+.cherry-text-value {
+
+    width: 100%;
+    max-width: 95%;
+
+    font-size:
+        var(--cherry-font-size-3xl);
+
+    font-weight:
+        var(--cherry-weight-bold);
+
+    line-height: 1.05;
+
+    letter-spacing:
+        var(--cherry-tracking-tight);
 }

@@ -1,9 +1,4 @@
-/* =========================================================
-   CHERRY — TEXT WIDGET
-   ========================================================= */
-
-import { Widget } from "../../core/widgets/widget.js";
-
+import { Widget } from "../../core/widgets/Widget.js";
 
 export class TextWidget extends Widget {
 
@@ -14,143 +9,407 @@ export class TextWidget extends Widget {
             type: "text"
         });
 
-
-        /* -------------------------------------------------
-           CONFIGURACIÓN
-           ------------------------------------------------- */
+        // =====================================================
+        // SETTINGS
+        // =====================================================
 
         this.settings = {
 
-            text:
-                config.settings?.text ??
-                "Cherry",
+            sizePreset: "small",
 
-            align:
-                config.settings?.align ??
-                "center",
+            style: "default",
 
-            verticalAlign:
-                config.settings?.verticalAlign ??
-                "center",
+            ...this.settings
 
-            fontSize:
-                config.settings?.fontSize ??
-                "32px",
-
-            fontWeight:
-                config.settings?.fontWeight ??
-                600,
-
-            color:
-                config.settings?.color ??
-                "var(--cherry-text-primary)"
         };
 
 
-        /* -------------------------------------------------
-           ESTILO
-           ------------------------------------------------- */
+        // =====================================================
+        // STATE
+        // =====================================================
 
-        this.variant =
-            config.variant ?? "glass";
+        this.state = {
+
+            text: "Hello Cherry",
+
+            ...this.state
+
+        };
+
+
+        // =====================================================
+        // SIZE PRESETS
+        // =====================================================
+
+        this.sizePresets = {
+
+            mini: {
+                columns: 2,
+                rows: 1
+            },
+
+            small: {
+                columns: 2,
+                rows: 2
+            },
+
+            medium: {
+                columns: 3,
+                rows: 2
+            },
+
+            large: {
+                columns: 3,
+                rows: 3
+            },
+
+            cardvertical: {
+                columns: 2,
+                rows: 4
+            },
+
+            cardhorizontal: {
+                columns: 4,
+                rows: 2
+            },
+
+            card: {
+                columns: 3,
+                rows: 4
+            },
+
+            giant: {
+                columns: 4,
+                rows: 6
+            }
+
+        };
+
+
+        // =====================================================
+        // STYLES
+        // =====================================================
+
+        this.styles = {
+
+            default: {
+                name: "Default"
+            }
+
+        };
+
+
+        // =====================================================
+        // APPLY SIZE
+        // =====================================================
+
+        const selectedSize =
+            config.size ?? "small";
+
+        const sizeConfig =
+            this.sizePresets[selectedSize];
+
+        if (sizeConfig) {
+
+            this.settings.sizePreset =
+                selectedSize;
+
+            this.setLayout({
+
+                ...sizeConfig,
+
+                ...config.layout
+
+            });
+
+        }
+
     }
 
 
-    /* =====================================================
-       RENDER
-       ===================================================== */
+    // =========================================================
+    // CREATE ELEMENT
+    // =========================================================
+
+    createElement() {
+
+        const element =
+            super.createElement();
+
+        element.classList.add(
+            "cherry-text"
+        );
+
+        return element;
+
+    }
+
+
+    // =========================================================
+    // SET SIZE
+    // =========================================================
+
+    setSizePreset(size) {
+
+        const sizeConfig =
+            this.sizePresets[size];
+
+        if (!sizeConfig) {
+
+            console.warn(
+                `TextWidget: size "${size}" no está definido.`
+            );
+
+            return false;
+
+        }
+
+        this.settings.sizePreset =
+            size;
+
+        this.setLayout(
+            sizeConfig
+        );
+
+        this.updateAttributes();
+
+        this.update();
+
+        return true;
+
+    }
+
+
+    // =========================================================
+    // SET STYLE
+    // =========================================================
+
+    setStyle(style) {
+
+        const styleConfig =
+            this.styles[style];
+
+        if (!styleConfig) {
+
+            console.warn(
+                `TextWidget: style "${style}" no está definido.`
+            );
+
+            return false;
+
+        }
+
+        this.settings.style =
+            style;
+
+        this.updateAttributes();
+
+        this.update();
+
+        return true;
+
+    }
+
+
+    // =========================================================
+    // UPDATE ATTRIBUTES
+    // =========================================================
+
+    updateAttributes() {
+
+        if (!this.element) {
+            return;
+        }
+
+        this.element.dataset.size =
+            this.settings.sizePreset;
+
+        this.element.dataset.style =
+            this.settings.style;
+
+    }
+
+
+    // =========================================================
+    // RENDER
+    // =========================================================
 
     render() {
 
-        super.render();
+        if (!this.element) {
 
+            this.createElement();
 
-        this.element.classList.add(
-            "widget-text"
-        );
+        }
 
-
-        this.element.classList.add(
-            `variant-${this.variant}`
-        );
-
-
-        this.renderText();
-    }
-
-
-    /* =====================================================
-       CREAR TEXTO
-       ===================================================== */
-
-    renderText() {
+        this.updateAttributes();
 
         this.element.innerHTML = "";
 
 
+        // =====================================================
+        // CONTENT
+        // =====================================================
+
         const content =
             document.createElement("div");
 
-
         content.classList.add(
-            "text-widget-content"
+            "cherry-text-content"
         );
 
 
-        content.textContent =
-            this.settings.text;
+        // =====================================================
+        // TEXT
+        // =====================================================
+
+        const text =
+            document.createElement("div");
+
+        text.classList.add(
+            "cherry-text-value"
+        );
+
+        text.textContent =
+            this.state.text;
 
 
-        content.style.textAlign =
-            this.settings.align;
+        // =====================================================
+        // STRUCTURE
+        // =====================================================
 
-        content.style.fontSize =
-            this.settings.fontSize;
-
-        content.style.fontWeight =
-            this.settings.fontWeight;
-
-        content.style.color =
-            this.settings.color;
-
+        content.appendChild(
+            text
+        );
 
         this.element.appendChild(
             content
         );
+
+        requestAnimationFrame(() => {
+            this.updateTextSize();
+        });
     }
 
+    updateTextSize() {
 
-    /* =====================================================
-       CAMBIAR TEXTO
-       ===================================================== */
-
-    setText(text) {
-
-        this.settings.text =
-            text;
-
-        this.renderText();
+    if (!this.element) {
+        return;
     }
 
-
-    /* =====================================================
-       CAMBIAR VARIANTE
-       ===================================================== */
-
-    setVariant(variant) {
-
-        this.variant =
-            variant;
-
-
-        this.element.classList.remove(
-            "variant-glass",
-            "variant-solid"
+    const textElement =
+        this.element.querySelector(
+            ".cherry-text-value"
         );
 
-
-        this.element.classList.add(
-            `variant-${variant}`
+    const content =
+        this.element.querySelector(
+            ".cherry-text-content"
         );
+
+    if (!textElement || !content) {
+        return;
     }
+
+    // =====================================================
+    // RESET
+    // =====================================================
+
+    textElement.style.fontSize = "1px";
+
+    // =====================================================
+    // AVAILABLE SPACE
+    // =====================================================
+
+    const availableWidth =
+        content.clientWidth;
+
+    const availableHeight =
+        content.clientHeight;
+
+    if (
+        availableWidth <= 0 ||
+        availableHeight <= 0
+    ) {
+        return;
+    }
+
+    // =====================================================
+    // FIND MAXIMUM SIZE
+    // =====================================================
+
+    let min = 1;
+
+    let max =
+        Math.min(
+            availableWidth,
+            availableHeight
+        );
+
+    let best = min;
+
+    while (min <= max) {
+
+        const size =
+            Math.floor(
+                (min + max) / 2
+            );
+
+        textElement.style.fontSize =
+            `${size}px`;
+
+        const fits =
+            textElement.scrollWidth <=
+                availableWidth &&
+            textElement.scrollHeight <=
+                availableHeight;
+
+        if (fits) {
+
+            best = size;
+
+            min =
+                size + 1;
+
+        } else {
+
+            max =
+                size - 1;
+
+        }
+
+    }
+
+    // =====================================================
+    // FINAL SIZE
+    // =====================================================
+
+    textElement.style.fontSize =
+        `${best}px`;
+
+}
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
+
+    update() {
+
+        super.update();
+
+        this.render();
+
+    }
+
+
+    // =========================================================
+    // DESTROY
+    // =========================================================
+
+    destroy() {
+
+        super.destroy();
+
+    }
+
 }

@@ -39,7 +39,7 @@ const clock = new ClockWidget({
 
 
 const media = new MediaWidget({
-    size: "card",
+    size: "medium",
     style: "artworkProtagonist",
     layout: {
         row: 2,
@@ -48,11 +48,10 @@ const media = new MediaWidget({
 
 
 const system = new SystemWidget({
+    size: "large",
+    style: "circular",
     layout: {
-        column: 0,
-        row: 13,
-        columns: 4,
-        rows: 5
+        row: 6,
     }
 });
 
@@ -60,7 +59,7 @@ const system = new SystemWidget({
 const controls = new ControlsWidget({
     layout: {
         column: 0,
-        row: 10,
+        row: 12,
         columns: 4,
         rows: 3
     }
@@ -70,7 +69,7 @@ const mediaVisual = new MediaVisualWidget({
 
     layout: {
         column: 2,
-        row: 8,
+        row: 15,
         columns: 2,
         rows: 2
     },
@@ -85,12 +84,10 @@ const mediaVisual = new MediaVisualWidget({
 });
 
 const text = new TextWidget({
-    variant: "translucid",
+    size: "small",
     layout: {
         column: 2,
-        row: 18,
-        columns: 2,
-        rows: 2
+        row: 4,
     }
 });
 
