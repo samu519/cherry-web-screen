@@ -1,16 +1,16 @@
-// src/core/state/appState.js
-
-import { State } from "./state.js";
 
 
-export const appState = new State({
+import { AppState } from "./State.js";
 
-    wifi: true,
+export const appState =
+    new AppState({
 
-    bluetooth: false,
+        volume: 75,
 
-    volume: 50,
+        brightness: 50,
 
-    brightness: 70
+        wifi: false,
 
-});
+        bluetooth: false
+
+    });

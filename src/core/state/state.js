@@ -115,3 +115,123 @@ export class State {
     }
 
 }
+
+export class AppState extends EventTarget {
+
+    constructor(initialState = {}) {
+
+        super();
+
+        this.state = {
+            ...initialState
+        };
+
+    }
+
+
+    // =====================================================
+    // GET
+    // =====================================================
+
+    get(id) {
+
+        return this.state[id];
+
+    }
+
+
+    // =====================================================
+    // SET
+    // =====================================================
+
+    set(id, value, source = null) {
+
+        const previous =
+            this.state[id];
+
+        // ---------------------------------------------
+        // Evitar eventos innecesarios
+        // ---------------------------------------------
+
+        if (Object.is(previous, value)) {
+            return false;
+        }
+
+
+        // ---------------------------------------------
+        // Guardar
+        // ---------------------------------------------
+
+        this.state[id] =
+            value;
+
+
+        // ---------------------------------------------
+        // Notificar
+        // ---------------------------------------------
+
+        this.dispatchEvent(
+            new CustomEvent(
+                "change",
+                {
+                    detail: {
+
+                        id,
+
+                        value,
+
+                        previous,
+
+                        source
+
+                    }
+                }
+            )
+        );
+
+
+        return true;
+
+    }
+
+
+    // =====================================================
+    // SUBSCRIBE
+    // =====================================================
+
+    subscribe(id, callback) {
+
+        const listener =
+            (event) => {
+
+                if (
+                    event.detail.id !== id
+                ) {
+                    return;
+                }
+
+                callback(
+                    event.detail
+                );
+
+            };
+
+
+        this.addEventListener(
+            "change",
+            listener
+        );
+
+
+        return () => {
+
+            this.removeEventListener(
+                "change",
+                listener
+            );
+
+        };
+
+    }
+
+}

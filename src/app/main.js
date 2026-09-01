@@ -19,7 +19,10 @@ import { TextWidget }
     from "../widgets/text/textwidget.js";
 
 import {ToggleWidget}
-    from "../widgets/togglewidget.js/togglewidget.js"
+    from "../widgets/controls/togglewidget.js";
+
+import { SliderWidget } 
+    from "../widgets/controls/sliderwidget.js";
 
 const canvas = new Canvas({
     width: 480,
@@ -109,9 +112,63 @@ const wifi2 =
         }
     });
 
+const sliderA  =
+    new SliderWidget({
+
+        id: "volume-slider-a",
+        style: "bar",
+        size: "mini",
+        layout: {
+            row: 8
+        },
+
+        control: {
+
+            id: "volume",
+
+            label: "Volume",
+
+            min: 0,
+            max: 100,
+            step: 1,
+            value: 50
+
+        }
+
+    });
 
 
+const sliderB =
+    new SliderWidget({
 
+        id: "brightness",
+
+        size: "mini",
+
+        layout: {
+            column: 2,
+            row: 9
+        },
+
+        control: {
+
+            id: "brightness",
+
+            label: "brightness",
+
+            min: 0,
+            max: 100,
+            step: 1,
+            value: 50
+
+        }
+
+    });
+
+
+canvas.addWidget(sliderA);
+
+canvas.addWidget(sliderB);
 
 console.log(media.layout);
 canvas.addWidget(wifi1);

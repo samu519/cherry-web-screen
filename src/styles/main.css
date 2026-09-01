@@ -18,6 +18,8 @@
 @import "./widgets/visual.css";
 @import "./widgets/text.css";
 @import "./widget/toggle.css";
+@import "./widgets/slider.css";
+
 * {
     box-sizing: border-box;
 }
@@ -48,25 +50,6 @@ body {
 
     width: var(--cherry-canvas-width);
     height: var(--cherry-canvas-height);
-
-    margin: 0 auto;
-
-    overflow: hidden;
-
-    background:  
-        radial-gradient(
-            circle at 20% 15%,
-            rgba(59, 131, 246, 0.61),
-            transparent 35%
-        ),
-
-        radial-gradient(
-            circle at 85% 70%,
-            rgba(96, 165, 250, 0.534),
-            transparent 40%
-        ),
-
-        #f4f6f9;
 }
 
 

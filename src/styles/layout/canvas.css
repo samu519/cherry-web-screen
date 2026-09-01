@@ -11,12 +11,12 @@
     background:
         radial-gradient(
             circle at 20% 15%,
-            rgba(59, 131, 246, 0.55),
+            color-mix(in srgb, var(--cherry-accent) 55%, transparent),
             transparent 35%
         ),
         radial-gradient(
             circle at 85% 70%,
-            rgba(96, 165, 250, 0.45),
+            color-mix(in srgb, var(--cherry-accent) 45%, transparent),
             transparent 40%
         ),
         var(--cherry-background);

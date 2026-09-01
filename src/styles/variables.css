@@ -6,14 +6,18 @@
 :root {
 
     /* =====================================================
-       01. COLORS
+       01. COLORS & ACCENTS (DEFAULT / LIGHT THEME)
        ===================================================== */
 
-    /* Base */
+    --cherry-theme-mode: light;
+
+    /* Base de color */
     --cherry-white: #ffffff;
     --cherry-black: #111111;
 
-    --cherry-background: #f5f6f8;
+    /* Fondos */
+    --cherry-background-base: #f4f5f8;
+    --cherry-background: color-mix(in srgb, var(--cherry-accent) 4%, var(--cherry-background-base));
     --cherry-surface: #ffffff;
 
     /* Texto */
@@ -22,10 +26,26 @@
     --cherry-text-muted: #9297a1;
     --cherry-text-disabled: #b8bbc2;
 
-    /* Azul Cherry */
-    --cherry-blue: #3b82f6;
-    --cherry-blue-hover: #2563eb;
-    --cherry-blue-soft: #dbeafe;
+    /* Grid y ambiente del canvas */
+    --cherry-canvas-grid-line: rgba(0, 0, 0, 0.05);
+    --cherry-ambient-glow-opacity: 25%;
+
+    /* Accent Principal (Personalizable) */
+    --cherry-accent: #3b82f6;
+    --cherry-accent-hover: color-mix(in srgb, var(--cherry-accent) 85%, black);
+    --cherry-accent-active: color-mix(in srgb, var(--cherry-accent) 70%, black);
+
+    /* Capas de Acento (Derivados dinámicamente) */
+    --cherry-accent-soft: color-mix(in srgb, var(--cherry-accent) 15%, transparent);
+    --cherry-accent-medium: color-mix(in srgb, var(--cherry-accent) 30%, transparent);
+    --cherry-accent-border: color-mix(in srgb, var(--cherry-accent) 20%, transparent);
+    --cherry-accent-shadow: color-mix(in srgb, var(--cherry-accent) 16%, transparent);
+    --cherry-accent-glow: color-mix(in srgb, var(--cherry-accent) 40%, transparent);
+
+    /* Aliases para compatibilidad */
+    --cherry-blue: var(--cherry-accent);
+    --cherry-blue-hover: var(--cherry-accent-hover);
+    --cherry-blue-soft: var(--cherry-accent-soft);
 
     /* Grises */
     --cherry-gray-50: #f8f9fb;
@@ -39,38 +59,19 @@
     --cherry-gray-800: #2c2f35;
     --cherry-gray-900: #181a1e;
 
+    /* Glass Light Mode */
+    --cherry-glass-dark-base: #1c1d21;
+    --cherry-glass-light-base: #ffffff;
 
-    /* =====================================================
-       02. GLASS
-       ===================================================== */
+    --cherry-glass-dark: color-mix(in srgb, var(--cherry-glass-dark-base) 72%, transparent);
+    --cherry-glass-dark-soft: color-mix(in srgb, var(--cherry-glass-dark-base) 58%, transparent);
 
-    /*
-       El glass oscuro es uno de los elementos principales
-       de la identidad visual de Cherry.
-    */
+    --cherry-glass-light: color-mix(in srgb, var(--cherry-glass-light-base) 72%, transparent);
+    --cherry-glass-light-soft: color-mix(in srgb, var(--cherry-glass-light-base) 52%, transparent);
 
-    --cherry-glass-dark:
-        rgba(28, 29, 33, 0.72);
-
-    --cherry-glass-dark-soft:
-        rgba(28, 29, 33, 0.58);
-
-    --cherry-glass-light:
-        rgba(255, 255, 255, 0.72);
-
-    --cherry-glass-light-soft:
-        rgba(255, 255, 255, 0.52);
-
-    /* Bordes del glass */
-
-    --cherry-glass-border:
-        rgba(255, 255, 255, 0.18);
-
-    --cherry-glass-border-light:
-        rgba(255, 255, 255, 0.45);
-
-    --cherry-glass-border-dark:
-        rgba(0, 0, 0, 0.08);
+    --cherry-glass-border: rgba(0, 0, 0, 0.08);
+    --cherry-glass-border-light: rgba(0, 0, 0, 0.12);
+    --cherry-glass-border-dark: rgba(0, 0, 0, 0.15);
 
 
     /* =====================================================
@@ -219,7 +220,8 @@
 
     --cherry-widget-border:
         1px solid rgba(255, 255, 255, 0.18);
-        /* =====================================================
+
+    /* =====================================================
        12.1 WIDGET VARIANTS
        ===================================================== */
 
@@ -289,7 +291,6 @@
         rgba(20, 20, 24, 0.58);
 
     --cherry-media-progress-height: 5px;
-    
 
 
     /* =====================================================
@@ -300,4 +301,24 @@
     --cherry-z-widget: 10;
     --cherry-z-overlay: 100;
     --cherry-z-editor: 1000;
+}
+
+[data-theme="dark"] {
+    --cherry-theme-mode: dark;
+    --cherry-background-base: #101115;
+    --cherry-background: color-mix(in srgb, var(--cherry-accent) 4%, var(--cherry-background-base));
+    --cherry-surface: #1c1d21;
+    --cherry-text-primary: #f5f5f7;
+    --cherry-text-secondary: #98989d;
+    --cherry-text-muted: #6e6e73;
+    --cherry-text-disabled: #484c54;
+    --cherry-canvas-grid-line: rgba(255, 255, 255, 0.04);
+    --cherry-ambient-glow-opacity: 55%;
+    --cherry-glass-dark: color-mix(in srgb, #1c1d21 72%, transparent);
+    --cherry-glass-dark-soft: color-mix(in srgb, #1c1d21 58%, transparent);
+    --cherry-glass-light: color-mix(in srgb, #ffffff 72%, transparent);
+    --cherry-glass-light-soft: color-mix(in srgb, #ffffff 52%, transparent);
+    --cherry-glass-border: rgba(255, 255, 255, 0.18);
+    --cherry-glass-border-light: rgba(255, 255, 255, 0.45);
+    --cherry-glass-border-dark: rgba(0, 0, 0, 0.08);
 }

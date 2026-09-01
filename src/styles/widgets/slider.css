@@ -1,0 +1,600 @@
+/* =========================================================
+   CHERRY — SLIDER WIDGET
+   ========================================================= */
+
+
+/* =========================================================
+   WIDGET
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget {
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    box-sizing: border-box;
+
+    overflow: hidden;
+
+}
+
+
+/* =========================================================
+   SLIDER
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget
+.cherry-slider {
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    box-sizing: border-box;
+
+    padding:
+        10px 13px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    border-radius: 22px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.085
+        );
+
+    box-shadow:
+
+        0 10px 28px
+        rgba(
+            0,
+            0,
+            0,
+            0.25
+        ),
+
+        inset 0 1px 0
+        rgba(
+            255,
+            255,
+            255,
+            0.09
+        );
+
+    backdrop-filter:
+        blur(18px);
+
+    -webkit-backdrop-filter:
+        blur(18px);
+
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget
+.cherry-slider-header {
+
+    width: 100%;
+
+    min-width: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+}
+
+
+/* =========================================================
+   LABEL
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget
+.cherry-slider-label {
+
+    min-width: 0;
+
+    flex: 1;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    font-size: 14px;
+
+    font-weight: 800;
+
+    line-height: 1.2;
+
+}
+
+
+/* =========================================================
+   VALUE
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget
+.cherry-slider-value {
+
+    flex: 0 0 auto;
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+
+}
+
+
+/* =========================================================
+   RANGE
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget
+.cherry-slider-range {
+
+    width: 100%;
+
+    height: 10px;
+
+    min-width: 0;
+
+    margin: 0;
+
+    padding: 0;
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    background:
+        linear-gradient(
+            to right,
+            var(--cherry-accent) 0%,
+            var(--cherry-accent) var(--slider-progress, 0%),
+            rgba(0, 0, 0, 0.486) var(--slider-progress, 0%),
+            rgba(0, 0, 0, 0.486) 100%
+        );
+
+    border: none;
+
+    border-radius: 999px;
+
+    outline: none;
+
+    cursor: pointer;
+
+}
+
+
+
+
+.cherry-widget.cherry-slider-widget
+.cherry-slider-range::-webkit-slider-thumb {
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 16px;
+    height: 16px;
+
+    margin-top: -5px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.95
+        );
+
+    box-shadow:
+
+        0 2px 8px
+        rgba(
+            0,
+            0,
+            0,
+            0.30
+        );
+
+}
+
+
+
+/* =========================================================
+   MINI — 2 × 1
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-size="mini"]
+.cherry-slider {
+
+    padding:
+        7px 11px;
+
+    
+
+    border-radius: 18px;
+
+}
+
+
+/* =========================================================
+   MINI — TEXT
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-size="mini"]
+.cherry-slider-label {
+
+    font-size: 9px;
+
+}
+
+
+.cherry-widget.cherry-slider-widget[data-size="mini"]
+.cherry-slider-value {
+
+    font-size: 9px;
+
+}
+
+
+/* =========================================================
+   MINI — RANGE
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-size="mini"]
+.cherry-slider-range {
+
+    height: 5px;
+
+}
+
+
+.cherry-widget.cherry-slider-widget[data-size="mini"]
+.cherry-slider-range::-webkit-slider-runnable-track {
+
+    height: 5px;
+
+}
+
+
+/* =========================================================
+   MEDIUM — 3 × 2
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-size="medium"]
+.cherry-slider {
+
+    padding:
+        12px 16px;
+
+    gap: 9px;
+
+    border-radius: 22px;
+
+}
+
+
+/* =========================================================
+   MEDIUM — TEXT
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-size="medium"]
+.cherry-slider-label {
+
+    font-size: 11px;
+
+}
+
+
+.cherry-widget.cherry-slider-widget[data-size="medium"]
+.cherry-slider-value {
+
+    font-size: 10px;
+
+}
+
+
+/* =========================================================
+   MEDIUM — RANGE
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-size="medium"]
+.cherry-slider-range {
+
+    height: 7px;
+
+}
+
+
+.cherry-widget.cherry.slider-widget[data-size="medium"]
+.cherry-slider-range::-webkit-slider-runnable-track {
+
+    height: 7px;
+
+}
+
+
+/* =========================================================
+   LARGE — 4 × 1
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-size="large"]
+.cherry-slider {
+
+    padding:
+        8px 16px;
+
+    gap: 6px;
+
+    border-radius: 20px;
+
+}
+
+
+/* =========================================================
+   LARGE — TEXT
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-size="large"]
+.cherry-slider-label {
+
+    font-size: 11px;
+
+}
+
+
+.cherry-widget.cherry-slider-widget[data-size="large"]
+.cherry-slider-value {
+
+    font-size: 10px;
+
+}
+
+
+/* =========================================================
+   LARGE — RANGE
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-size="large"]
+.cherry-slider-range {
+
+    height: 5px;
+
+}
+
+
+.cherry.widget.cherry-slider-widget[data-size="large"]
+.cherry-slider-range::-webkit-slider-runnable-track {
+
+    height: 5px;
+
+}
+
+/* =========================================================
+   SLIDER — BAR
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-widget-style="bar"]
+.cherry-slider-bar {
+
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    box-sizing: border-box;
+
+}
+
+
+/* =========================================================
+   BAR TRACK
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-widget-style="bar"]
+.cherry-slider-bar-track {
+
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    border-radius: 999px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.10
+        );
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
+
+    box-shadow:
+
+        0 10px 28px
+        rgba(
+            0,
+            0,
+            0,
+            0.24
+        ),
+
+        inset 0 1px 0
+        rgba(
+            255,
+            255,
+            255,
+            0.09
+        );
+
+    backdrop-filter:
+        blur(18px);
+
+    -webkit-backdrop-filter:
+        blur(18px);
+
+}
+
+
+/* =========================================================
+   BAR FILL
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-widget-style="bar"]
+.cherry-slider-bar-fill {
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    width: 100%;
+
+    border-radius: inherit;
+
+    background:
+        var(--cherry-accent);
+
+    transition:
+        width 140ms ease;
+    
+        
+
+}
+
+
+/* =========================================================
+   BAR CONTENT
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-widget-style="bar"]
+.cherry-slider-bar-content {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 2;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding:
+        0 17px;
+
+    pointer-events: none;
+
+}
+
+
+/* =========================================================
+   BAR LABEL
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-widget-style="bar"]
+.cherry-slider-bar-label {
+
+    min-width: 0;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    font-size: 14px;
+
+    font-weight: 800;
+
+}
+
+
+/* =========================================================
+   BAR VALUE
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-widget-style="bar"]
+.cherry-slider-bar-value {
+
+    flex: 0 0 auto;
+
+    font-size: 11px;
+
+    font-weight: 900;
+
+}
+
+
+/* =========================================================
+   BAR RANGE — INVISIBLE INTERACTION LAYER
+   ========================================================= */
+
+.cherry-widget.cherry-slider-widget[data-widget-style="bar"]
+.cherry-slider-range {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 3;
+
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+
+    opacity: 0;
+
+    cursor: pointer;
+
+}
+

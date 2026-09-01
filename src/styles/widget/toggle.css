@@ -37,7 +37,7 @@
 
     overflow: hidden;
 
-    color: rgb(0, 62, 179);
+    color: var(--cherry-accent-active);
     aspect-ratio: 1 / 1;
     border-radius: 50%;
     place-self: center;
@@ -367,22 +367,12 @@
 .cherry-toggle-icon {
 
     background:
-        rgba(
-            59,
-            130,
-            246,
-            0.30
-        );
+        var(--cherry-accent-medium);
 
     box-shadow:
 
         0 8px 20px
-        rgba(
-            59,
-            130,
-            246,
-            0.16
-        ),
+        var(--cherry-accent-shadow),
 
         inset 0 1px 0
         rgba(
@@ -572,22 +562,12 @@
 .cherry-toggle-icon {
 
     background:
-        rgba(
-            59,
-            130,
-            246,
-            0.30
-        );
+        var(--cherry-accent-medium);
 
     box-shadow:
 
         0 8px 24px
-        rgba(
-            59,
-            130,
-            246,
-            0.18
-        ),
+        var(--cherry-accent-shadow),
 
         inset 0 1px 0
         rgba(
@@ -660,30 +640,15 @@
 .cherry-toggle-button.active {
 
     background:
-        rgba(
-            59,
-            130,
-            246,
-            0.30
-        );
+        var(--cherry-accent-medium);
 
     border-color:
-        rgba(
-            59,
-            130,
-            246,
-            0.20
-        );
+        var(--cherry-accent-border);
 
     box-shadow:
 
         0 10px 28px
-        rgba(
-            59,
-            130,
-            246,
-            0.16
-        ),
+        var(--cherry-accent-shadow),
 
         inset 0 1px 0
         rgba(
@@ -724,22 +689,12 @@
 .cherry-widget.cherry-toggle[data-style="widget"].active {
 
     background:
-        rgba(
-            59,
-            130,
-            246,
-            0.30
-        );
+        var(--cherry-accent-medium);
 
     box-shadow:
 
         0 10px 30px
-        rgba(
-            59,
-            130,
-            246,
-            0.16
-        ),
+        var(--cherry-accent-shadow),
 
         inset 0 1px 0
         rgba(
