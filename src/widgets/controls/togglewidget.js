@@ -269,86 +269,71 @@ export class ToggleWidget extends Widget {
     
     connectState() {
 
-        // Evitar suscripciones duplicadas
         if (this.unsubscribe) {
             this.unsubscribe();
             this.unsubscribe = null;
         }
 
-
-        // Suscribirse al estado de este control
         this.unsubscribe = appState.subscribe(
             this.control.id,
-            value => {
-
-                this.updateFromState(value);
-
+            data => {
+                const val = typeof data === "object" && data !== null && "value" in data ? data.value : data;
+                this.updateFromState(val);
             }
         );
 
+        const currentVal = appState.get(this.control.id);
+        const initialVal = currentVal !== undefined ? currentVal : this.control.value;
+        this.updateFromState(initialVal);
 
-        // Sincronizar inmediatamente
-        this.updateFromState(
-            appState.get(this.control.id)
+    }
+
+    updateFromState(rawVal) {
+
+        if (!this.element) {
+            return;
+        }
+
+        const value = typeof rawVal === "object" && rawVal !== null && "value" in rawVal ? rawVal.value : rawVal;
+        const isActive = Boolean(value);
+
+        this.control.value = isActive;
+
+        this.element.classList.toggle(
+            "active",
+            isActive
         );
 
-    }
-
-    updateFromState(value) {
-
-    if (!this.element) {
-        return;
-    }
-
-
-    const isActive = Boolean(value);
-
-
-    // Widget
-    this.element.classList.toggle(
-        "active",
-        isActive
-    );
-
-
-    // Button
-    const button =
-        this.element.querySelector(
-            ".cherry-toggle-button"
-        );
-
-    if (!button) {
-        return;
-    }
-
-
-    button.classList.toggle(
-        "active",
-        isActive
-    );
-
-}
-
-
-    // =========================================================
-    // RENDER
-    // =========================================================
-    toggle() {
-
-            const current =
-                Boolean(
-                    appState.get(
-                        this.control.id
-                    )
-                );
-
-
-            appState.set(
-                this.control.id,
-                !current
+        const button =
+            this.element.querySelector(
+                ".cherry-toggle-button"
             );
 
+        if (button) {
+            button.classList.toggle(
+                "active",
+                isActive
+            );
         }
+
+    }
+
+    toggle() {
+
+        const currentState = appState.get(this.control.id);
+        const current = currentState !== undefined ? Boolean(currentState) : Boolean(this.control.value);
+        const newValue = !current;
+
+        this.control.value = newValue;
+        appState.set(
+            this.control.id,
+            newValue,
+            this.id
+        );
+
+        this.updateFromState(newValue);
+
+    }
     render() {
 
         if (!this.element) {

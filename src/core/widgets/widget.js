@@ -118,6 +118,9 @@ export class Widget {
         element.dataset.widgetType =
             this.type;
 
+        element.dataset.size =
+            this.size;
+
         element.dataset.widgetSize =
             this.size;
 
@@ -206,80 +209,50 @@ export class Widget {
         return this.style;
     }
 
-/* =====================================================
-   CAMBIAR TAMAÑO
-   ===================================================== */
-
-setSize(size) {
-
-    const preset =
-        this.sizePresets[size];
-
-    if (!preset) {
-
-        console.warn(
-            `Cherry: size "${size}" no está definido para ${this.type}`
-        );
-
-        return false;
-    }
-
-
-    /* ---------------------------------------------
-       Guardar tamaño
-       --------------------------------------------- */
-
-    this.size =
-        size;
-
-
-    /* ---------------------------------------------
-       Aplicar dimensiones al layout
-       --------------------------------------------- */
-
-    this.layout = {
-
-        ...this.layout,
-
-        columns:
-            preset.columns,
-
-        rows:
-            preset.rows
-    };
-
-
-    /* ---------------------------------------------
-       Actualizar DOM
-       --------------------------------------------- */
-
-    if (this.element) {
-
-        this.element.dataset.widgetSize =
-            this.size;
-    }
-
-
-    return true;
-}
-
-
     /* =====================================================
-       CAMBIAR VARIANTE
+       CAMBIAR TAMAÑO
        ===================================================== */
 
-    setVariant(variant) {
+    setSize(size) {
 
-        this.variant =
-            variant;
+        const preset =
+            this.sizePresets[size];
 
-        if (this.element) {
+        if (!preset) {
 
-            this.element.dataset.widgetVariant =
-                this.variant;
+            console.warn(
+                `Cherry: size "${size}" no está definido para ${this.type}`
+            );
+
+            return false;
         }
 
-        return this.variant;
+        this.size = size;
+
+        if (this.settings) {
+            this.settings.sizePreset = size;
+        }
+
+        this.layout = {
+            ...this.layout,
+            columns: preset.columns,
+            rows: preset.rows
+        };
+
+        if (this.element) {
+            this.element.dataset.size = this.size;
+            this.element.dataset.widgetSize = this.size;
+        }
+
+        if (typeof this.updateAttributes === 'function') {
+            this.updateAttributes();
+        }
+
+        if (typeof this.render === 'function') {
+            this.render();
+        }
+
+        return true;
     }
 
 

@@ -496,7 +496,7 @@
 
     border-radius: 50%;
 
-    background: var(--cherry-white);
+    background: var(--cherry-glass-dark-base, #101115);
 
     z-index: 1;
 }
@@ -538,7 +538,7 @@
         var(--cherry-weight-bold);
 
     color:
-        var(--cherry-text-primary);
+        #ffffff;
 
     white-space: nowrap;
 }
@@ -567,7 +567,7 @@
         var(--cherry-weight-medium);
 
     color:
-        var(--cherry-text-secondary);
+        rgba(255, 255, 255, 0.75);
 
     white-space: nowrap;
 }
@@ -841,7 +841,7 @@
     border-radius: 50%;
 
     background:
-        var(--cherry-white);
+        var(--cherry-glass-dark-base, #101115);
 }
 
 

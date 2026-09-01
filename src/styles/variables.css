@@ -314,6 +314,8 @@
     --cherry-text-disabled: #484c54;
     --cherry-canvas-grid-line: rgba(255, 255, 255, 0.04);
     --cherry-ambient-glow-opacity: 55%;
+
+    /* Glass Dark Mode */
     --cherry-glass-dark: color-mix(in srgb, #1c1d21 72%, transparent);
     --cherry-glass-dark-soft: color-mix(in srgb, #1c1d21 58%, transparent);
     --cherry-glass-light: color-mix(in srgb, #ffffff 72%, transparent);
@@ -321,4 +323,16 @@
     --cherry-glass-border: rgba(255, 255, 255, 0.18);
     --cherry-glass-border-light: rgba(255, 255, 255, 0.45);
     --cherry-glass-border-dark: rgba(0, 0, 0, 0.08);
+
+    /* Variantes Translucid & Solid en Modo Oscuro */
+    --cherry-translucid-background: rgba(28, 29, 35, 0.65);
+    --cherry-translucid-border: rgba(255, 255, 255, 0.16);
+    --cherry-translucid-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
+
+    --cherry-solid-background: #1c1d22;
+    --cherry-solid-border: rgba(255, 255, 255, 0.10);
+    --cherry-solid-shadow: 0 10px 28px rgba(0, 0, 0, 0.30);
+
+    --cherry-control-bg: rgba(255, 255, 255, 0.085);
+    --cherry-control-bg-hover: rgba(255, 255, 255, 0.14);
 }

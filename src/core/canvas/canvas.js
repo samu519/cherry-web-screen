@@ -156,6 +156,10 @@ export class Canvas {
         widget.setGeometry(
             geometry
         );
+
+        if (typeof widget.render === 'function') {
+            widget.render();
+        }
     }
 
 
