@@ -255,6 +255,24 @@ export class Widget {
         return true;
     }
 
+    /* =====================================================
+        CAMBIAR VARIANTE
+    ===================================================== */
+
+    setVariant(variant) {
+
+        this.variant =
+            variant;
+
+        if (this.element) {
+
+            this.element.dataset.widgetVariant =
+                this.variant;
+        }
+
+        return this.variant;
+    }
+
 
     /* =====================================================
        RENDER

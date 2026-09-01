@@ -2,6 +2,15 @@ import { Canvas } from "../core/canvas/Canvas.js";
 import { initializeEditor } from "../editor/index.js";
 import { EditorEntryButton } from "../editor/ui/EditorEntryButton.js";
 
+import {
+    linkLayoutFile,
+    tryReconnect,
+    readLayoutFile,
+    writeLayoutFile,
+    isFileStorageSupported,
+    hasLinkedFile
+} from "../core/storage/layoutFileStorage.js";
+
 import { ClockWidget }
     from "../widgets/clock/ClockWidget.js";
 
@@ -37,7 +46,7 @@ let editorEntryButton = null;
 let currentLayoutState = [];
 const LAYOUT_STORAGE_KEY = 'cherry-layout-state-v1';
 
-function saveCurrentLayout() {
+async function saveCurrentLayout() {
     currentLayoutState = canvas.widgets.map(widget => ({
         id: widget.id,
         type: widget.type,
@@ -50,69 +59,46 @@ function saveCurrentLayout() {
         state: { ...widget.state }
     }));
 
+    // Respaldo local inmediato
     try {
         window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(currentLayoutState));
     } catch (error) {
-        console.warn('Cherry: no se pudo guardar el layout persistente', error);
+        console.warn('Cherry: no se pudo guardar el respaldo en localStorage', error);
     }
+
+    // Escritura real en archivo (si ya está vinculado)
+    const wrote = await writeLayoutFile(currentLayoutState);
 
     if (window.cherryApp) {
         window.cherryApp.layoutState = currentLayoutState;
+        window.cherryApp.fileLinked = wrote;
     }
 
     return currentLayoutState;
 }
 
-function loadSavedLayout() {
-    try {
-        const saved = window.localStorage.getItem(LAYOUT_STORAGE_KEY);
-        if (!saved) return [];
+async function bootLayout() {
 
-        const parsed = JSON.parse(saved);
-        return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-        console.warn('Cherry: no se pudo cargar el layout persistente', error);
-        return [];
+    let layout = null;
+
+    const reconnected = await tryReconnect();
+
+    if (reconnected) {
+        layout = await readLayoutFile();
+    }
+
+    if (!layout || !layout.length) {
+        layout = loadSavedLayout(); // fallback a localStorage
+    }
+
+    if (layout && layout.length) {
+        applySavedLayout(layout);
+    } else {
+        await saveCurrentLayout();
     }
 }
 
-function applySavedLayout(layoutState = []) {
-    if (!Array.isArray(layoutState) || !layoutState.length) return;
-
-    layoutState.forEach(saved => {
-        const widget = canvas.widgets.find(item => item.id === saved.id);
-        if (!widget) return;
-
-        widget.size = saved.size;
-        widget.variant = saved.variant;
-        widget.style = saved.style;
-        widget.layout = { ...saved.layout };
-        widget.geometry = { ...saved.geometry };
-        widget.settings = { ...saved.settings };
-        widget.state = { ...saved.state };
-
-        if (typeof widget.setSize === 'function') {
-            widget.setSize(saved.size);
-        }
-        if (typeof widget.setVariant === 'function') {
-            widget.setVariant(saved.variant);
-        }
-        if (typeof widget.setStyle === 'function') {
-            widget.setStyle(saved.style);
-        }
-
-        canvas.updateWidgetLayout(widget);
-        if (widget.element) {
-            widget.render();
-        }
-    });
-
-    currentLayoutState = layoutState;
-    if (window.cherryApp) {
-        window.cherryApp.layoutState = currentLayoutState;
-    }
-}
-
+await bootLayout();
 
 // =====================================================
 // CREAR CANVAS
@@ -384,7 +370,41 @@ function exitEditorMode() {
     console.log('✓ Back to normal mode');
 }
 
+function createLinkFileButton() {
 
+    if (!isFileStorageSupported()) {
+        console.warn('Cherry: este navegador no soporta guardar en archivo. Usa Chrome o Edge.');
+        return;
+    }
+
+    const button = document.createElement('button');
+    button.className = 'cherry-editor-entry-button';
+    button.style.top = '56px'; // debajo del botón "Editar"
+    button.innerHTML = `
+        <span class="cherry-editor-entry-button__icon">💾</span>
+        <span class="cherry-editor-entry-button__label">Vincular archivo</span>
+    `;
+    button.title = 'Elegir o crear el archivo donde se guarda el layout';
+
+    const refreshLabel = async () => {
+        const linked = await hasLinkedFile();
+        button.querySelector('.cherry-editor-entry-button__label').textContent =
+            linked ? 'Archivo vinculado ✓' : 'Vincular archivo';
+    };
+
+    button.addEventListener('click', async () => {
+        const ok = await linkLayoutFile();
+        if (ok) {
+            await saveCurrentLayout();
+        }
+        refreshLabel();
+    });
+
+    canvas.element.parentNode.appendChild(button);
+    refreshLabel();
+}
+
+createLinkFileButton();
 // =====================================================
 // EXPOSER FUNCIONES GLOBALES PARA DEBUGGING
 // =====================================================

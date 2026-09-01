@@ -124,16 +124,16 @@ export class CanvasAdapter {
 
         const widget = this.getWidget(widgetId);
 
-        if (!widget || !widget.setVariant) return null;
+        if (!widget) return null;
 
-        widget.setVariant(variant);
+        widget.variant = variant;
+
+        if (typeof widget.setVariant === 'function') {
+            widget.setVariant(variant);
+        }
 
         if (widget.element) {
             widget.element.dataset.widgetVariant = widget.variant;
-        }
-
-        if (typeof widget.render === 'function') {
-            widget.render();
         }
 
         if (window.cherryApp && typeof window.cherryApp.saveLayout === 'function') {
@@ -152,9 +152,15 @@ export class CanvasAdapter {
 
         const widget = this.getWidget(widgetId);
 
-        if (!widget || !widget.setStyle) return null;
+        if (!widget) return null;
 
-        widget.setStyle(style);
+        // Sincronizamos la propiedad base ANTES de llamar al override del widget,
+        // igual que ya se hace con setWidgetSize()
+        widget.style = style;
+
+        if (typeof widget.setStyle === 'function') {
+            widget.setStyle(style);
+        }
 
         if (widget.element) {
             widget.element.dataset.widgetStyle = widget.style;
@@ -170,7 +176,6 @@ export class CanvasAdapter {
 
         return widget;
     }
-
 
     /* =====================================================
        DUPLICAR WIDGET

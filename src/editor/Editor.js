@@ -804,28 +804,75 @@ export class Editor {
 
         // Keyboard shortcut para salir
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !this.overlayManager.getActive()) {
-                this.exitEditor();
-            }
 
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-                e.preventDefault();
-                const previousState = this.history.undo();
-                if (previousState) {
-                    this.restoreCanvasState(previousState);
-                    this.state.clearSelection();
-                }
-            }
+    if (e.key === 'Escape' && !this.overlayManager.getActive()) {
+        this.exitEditor();
+    }
 
-            if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
-                e.preventDefault();
-                const nextState = this.history.redo();
-                if (nextState) {
-                    this.restoreCanvasState(nextState);
-                    this.state.clearSelection();
-                }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        const previousState = this.history.undo();
+        if (previousState) {
+            this.restoreCanvasState(previousState);
+            this.state.clearSelection();
+        }
+    }
+
+    if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
+        e.preventDefault();
+        const nextState = this.history.redo();
+        if (nextState) {
+            this.restoreCanvasState(nextState);
+            this.state.clearSelection();
+        }
+    }
+
+    const activeEl = document.activeElement;
+    const isTyping = activeEl && ['INPUT', 'SELECT', 'TEXTAREA'].includes(activeEl.tagName);
+
+    // Eliminar con Delete / Backspace
+    if ((e.key === 'Delete' || e.key === 'Backspace') && !isTyping && this.state.selectedWidgets.length > 0) {
+        e.preventDefault();
+        this.deleteWidgets([...this.state.selectedWidgets]);
+    }
+
+    // Mover con flechas (Shift = pasos de 12px, sin Shift = 1px)
+    const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+
+        if (arrowKeys.includes(e.key) && !isTyping && this.state.selectedWidgets.length > 0) {
+
+            e.preventDefault();
+
+            const step = e.shiftKey ? 12 : 1;
+            let dx = 0, dy = 0;
+
+            if (e.key === 'ArrowUp') dy = -step;
+            if (e.key === 'ArrowDown') dy = step;
+            if (e.key === 'ArrowLeft') dx = -step;
+            if (e.key === 'ArrowRight') dx = step;
+
+            this.state.selectedWidgets.forEach(id => {
+
+                const w = this.canvasAdapter.getWidget(id);
+                if (!w) return;
+
+                const maxX = Math.max(0, this.canvas.width - w.geometry.width);
+                const maxY = Math.max(0, this.canvas.height - w.geometry.height);
+
+                w.setGeometry({
+                    x: Math.min(Math.max(w.geometry.x + dx, 0), maxX),
+                    y: Math.min(Math.max(w.geometry.y + dy, 0), maxY)
+                });
+            });
+
+            this.selectionManager.updateHandlePositions();
+            this.recordHistory('Mover con teclado');
+
+            if (window.cherryApp && typeof window.cherryApp.saveLayout === 'function') {
+                window.cherryApp.saveLayout();
             }
-        });
+        }
+    });
 
         return toolbar;
     }
@@ -884,41 +931,93 @@ export class Editor {
             const isMenuButton = e.target.closest('.cherry-widget-menu-button');
 
             if (widget && !isMenuButton && e.button === 0) {
+
+                const widgetId = widget.dataset.widgetId;
+
+                // Si haces click en un widget que NO está seleccionado,
+                // lo seleccionamos (respetando Ctrl/Cmd para multi-select)
+                if (!this.state.selectedWidgets.includes(widgetId)) {
+                    const multiSelect = e.ctrlKey || e.metaKey;
+                    this.state.selectWidget(widgetId, multiSelect);
+                }
+
                 this.isDragging = true;
-                this.draggedWidgetId = widget.dataset.widgetId;
+                this.draggedWidgetId = widgetId;
                 this.dragStartPos = { x: e.clientX, y: e.clientY };
-                this.dragStartRect = widget.getBoundingClientRect();
-                this.dragStartGeometry = { ...this.canvasAdapter.getWidget(this.draggedWidgetId).geometry };
-                widget.classList.add('cherry-widget--dragging');
+
+                // Capturamos la geometría inicial de TODOS los widgets
+                // que van a moverse juntos
+                const idsToMove = this.state.selectedWidgets.includes(widgetId)
+                    ? this.state.selectedWidgets
+                    : [widgetId];
+
+                this.dragGroupStartGeometry = new Map();
+
+                idsToMove.forEach(id => {
+                    const w = this.canvasAdapter.getWidget(id);
+                    if (w) {
+                        this.dragGroupStartGeometry.set(id, { ...w.geometry });
+                    }
+                });
+
+                idsToMove.forEach(id => {
+                    const el = document.querySelector(`[data-widget-id="${id}"]`);
+                    if (el) el.classList.add('cherry-widget--dragging');
+                });
             }
         });
 
         document.addEventListener('mousemove', (e) => {
 
-            if (this.isDragging && this.draggedWidgetId && this.dragStartGeometry) {
-                const widget = this.canvasAdapter.getWidget(this.draggedWidgetId);
-                if (widget) {
-                    const dx = e.clientX - this.dragStartPos.x;
-                    const dy = e.clientY - this.dragStartPos.y;
+            if (this.isDragging && this.dragGroupStartGeometry && this.dragGroupStartGeometry.size > 0) {
 
-                    const nextX = this.dragStartGeometry.x + dx;
-                    const nextY = this.dragStartGeometry.y + dy;
-                    const snapped = this.snapManager.snapPosition(nextX, nextY, null, this.canvas.widgets.filter(w => w.id !== widget.id).map(w => w.element));
-                    const maxX = Math.max(0, this.canvas.width - widget.geometry.width);
-                    const maxY = Math.max(0, this.canvas.height - widget.geometry.height);
+                const dx = e.clientX - this.dragStartPos.x;
+                const dy = e.clientY - this.dragStartPos.y;
 
-                    const clampedX = Math.min(Math.max(snapped.x, 0), maxX);
-                    const clampedY = Math.min(Math.max(snapped.y, 0), maxY);
+                // El widget "líder" (el que originó el drag) es quien decide el snap
+                const leaderStart = this.dragGroupStartGeometry.get(this.draggedWidgetId);
+                const leaderWidget = this.canvasAdapter.getWidget(this.draggedWidgetId);
 
-                    widget.setGeometry({
-                        x: clampedX,
-                        y: clampedY
-                    });
+                let appliedDx = dx;
+                let appliedDy = dy;
 
-                    const guides = this.snapManager.calculateGuides(widget.element.getBoundingClientRect(), this.canvas.widgets.filter(w => w.id !== widget.id).map(w => w.element));
+                if (leaderStart && leaderWidget) {
+
+                    const rawX = leaderStart.x + dx;
+                    const rawY = leaderStart.y + dy;
+
+                    const otherElements = this.canvas.widgets
+                        .filter(w => !this.dragGroupStartGeometry.has(w.id))
+                        .map(w => w.element);
+
+                    const snapped = this.snapManager.snapPosition(rawX, rawY, null, otherElements);
+
+                    // El delta ya snapeado se replica al resto del grupo
+                    appliedDx = snapped.x - leaderStart.x;
+                    appliedDy = snapped.y - leaderStart.y;
+
+                    const guides = this.snapManager.calculateGuides(
+                        leaderWidget.element.getBoundingClientRect(),
+                        otherElements
+                    );
                     this.renderGuides(guides);
-                    this.selectionManager.updateHandlePositions();
                 }
+
+                this.dragGroupStartGeometry.forEach((startGeo, id) => {
+
+                    const w = this.canvasAdapter.getWidget(id);
+                    if (!w) return;
+
+                    const maxX = Math.max(0, this.canvas.width - startGeo.width);
+                    const maxY = Math.max(0, this.canvas.height - startGeo.height);
+
+                    const clampedX = Math.min(Math.max(startGeo.x + appliedDx, 0), maxX);
+                    const clampedY = Math.min(Math.max(startGeo.y + appliedDy, 0), maxY);
+
+                    w.setGeometry({ x: clampedX, y: clampedY });
+                });
+
+                this.selectionManager.updateHandlePositions();
             }
 
             if (this.isResizing && this.resizedWidgetId && this.resizeStartGeometry) {
@@ -969,6 +1068,11 @@ export class Editor {
                     }
 
                     widget.setGeometry(next);
+                    const guides = this.snapManager.calculateGuides(
+                        widget.element.getBoundingClientRect(),
+                        this.canvas.widgets.filter(w => w.id !== widget.id).map(w => w.element)
+                    );
+                    this.renderGuides(guides);
                     this.selectionManager.updateHandlePositions();
                 }
             }
@@ -976,12 +1080,19 @@ export class Editor {
 
         document.addEventListener('mouseup', (e) => {
 
-            if (this.isDragging && this.draggedWidgetId) {
-                const widget = document.querySelector(`[data-widget-id="${this.draggedWidgetId}"]`);
-                if (widget) {
-                    widget.classList.remove('cherry-widget--dragging');
-                }
-                this.recordHistory('Movimiento de widget');
+            if (this.isDragging && this.dragGroupStartGeometry) {
+
+                this.dragGroupStartGeometry.forEach((_, id) => {
+                    const el = document.querySelector(`[data-widget-id="${id}"]`);
+                    if (el) el.classList.remove('cherry-widget--dragging');
+                });
+
+                this.recordHistory(
+                    this.dragGroupStartGeometry.size > 1
+                        ? 'Movimiento de múltiples widgets'
+                        : 'Movimiento de widget'
+                );
+
                 if (window.cherryApp && typeof window.cherryApp.saveLayout === 'function') {
                     window.cherryApp.saveLayout();
                 }
@@ -999,8 +1110,7 @@ export class Editor {
 
             this.isDragging = false;
             this.draggedWidgetId = null;
-            this.dragStartRect = null;
-            this.dragStartGeometry = null;
+            this.dragGroupStartGeometry = null;
             this.dragStartPos = null;
 
             this.isResizing = false;
@@ -1161,6 +1271,7 @@ export class Editor {
                 this.canvas.widgets = this.canvas.widgets.filter(item => item.id !== widgetId);
                 this.state.clearSelection();
                 this.recordHistory('Eliminar widget');
+                this.deleteWidgets([widgetId]);
                 break;
 
             case 'duplicate':
@@ -1219,6 +1330,29 @@ export class Editor {
 
             default:
                 console.log(`Action ${action} not implemented`);
+        }
+    }
+
+    deleteWidgets(widgetIds = []) {
+
+        if (!widgetIds.length) return;
+
+        widgetIds.forEach(id => {
+            const element = document.querySelector(`[data-widget-id="${id}"]`);
+            if (element) element.remove();
+            this.canvas.widgets = this.canvas.widgets.filter(item => item.id !== id);
+        });
+
+        this.state.clearSelection();
+
+        this.recordHistory(
+            widgetIds.length > 1
+                ? `Eliminar ${widgetIds.length} widgets`
+                : 'Eliminar widget'
+        );
+
+        if (window.cherryApp && typeof window.cherryApp.saveLayout === 'function') {
+            window.cherryApp.saveLayout();
         }
     }
 
