@@ -53,9 +53,7 @@ const LAYOUT_STORAGE_KEY = 'cherry-layout-state-v1';
 // =====================================================
 async function saveCurrentLayout() {
 
-    console.log('[Cherry] saveCurrentLayout() llamado');
-
-    currentLayoutState = canvas.widgets.map(widget => ({
+    const widgetsState = canvas.widgets.map(widget => ({
         id: widget.id,
         type: widget.type,
         size: widget.size,
@@ -67,25 +65,35 @@ async function saveCurrentLayout() {
         state: { ...widget.state }
     }));
 
-    console.log('[Cherry] layout capturado:', currentLayoutState);
+    const appearanceState = {
+        accentColor: getComputedStyle(document.documentElement)
+            .getPropertyValue('--cherry-accent')
+            .trim(),
+        themeMode: document.documentElement.getAttribute('data-theme') || 'dark'
+    };
+
+    currentLayoutState = widgetsState;
+
+    const fullState = {
+        widgets: widgetsState,
+        appearance: appearanceState
+    };
 
     try {
-        window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(currentLayoutState));
-        console.log('[Cherry] ✅ respaldo guardado en localStorage');
+        window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(fullState));
     } catch (error) {
         console.warn('Cherry: no se pudo guardar el respaldo en localStorage', error);
     }
 
-    console.log('[Cherry] intentando escribir en archivo...');
-    const wrote = await writeLayoutFile(currentLayoutState);
-    console.log('[Cherry] resultado de writeLayoutFile:', wrote);
+    const wrote = await writeLayoutFile(fullState);
 
     if (window.cherryApp) {
         window.cherryApp.layoutState = currentLayoutState;
+        window.cherryApp.appearanceState = appearanceState;
         window.cherryApp.fileLinked = wrote;
     }
 
-    return currentLayoutState;
+    return fullState;
 }
 
 
@@ -96,17 +104,28 @@ async function saveCurrentLayout() {
 function loadSavedLayout() {
     try {
         const saved = window.localStorage.getItem(LAYOUT_STORAGE_KEY);
-        if (!saved) return [];
+        if (!saved) return { widgets: [], appearance: null };
 
         const parsed = JSON.parse(saved);
-        return Array.isArray(parsed) ? parsed : [];
+        return normalizeLoadedState(parsed);
     } catch (error) {
         console.warn('Cherry: no se pudo cargar el layout persistente', error);
-        return [];
+        return { widgets: [], appearance: null };
     }
 }
 
+function applySavedAppearance(appearance) {
 
+    if (!appearance) return;
+
+    if (appearance.accentColor) {
+        document.documentElement.style.setProperty('--cherry-accent', appearance.accentColor);
+    }
+
+    if (appearance.themeMode) {
+        document.documentElement.setAttribute('data-theme', appearance.themeMode);
+    }
+}
 // =====================================================
 // APLICAR LAYOUT GUARDADO A LOS WIDGETS EXISTENTES
 // =====================================================
@@ -151,6 +170,21 @@ function applySavedLayout(layoutState = []) {
 }
 
 
+function normalizeLoadedState(raw) {
+
+    if (!raw) {
+        return { widgets: [], appearance: null };
+    }
+
+    if (Array.isArray(raw)) {
+        return { widgets: raw, appearance: null };
+    }
+
+    return {
+        widgets: Array.isArray(raw.widgets) ? raw.widgets : [],
+        appearance: raw.appearance || null
+    };
+}
 // =====================================================
 // CREAR CANVAS
 // =====================================================
@@ -329,32 +363,27 @@ canvas.addWidget(text);
 
     async function bootLayout() {
 
-        console.log('[Cherry] bootLayout() iniciando...');
+    let state = { widgets: [], appearance: null };
 
-        let layout = null;
+    const reconnected = await tryReconnect();
 
-        const reconnected = await tryReconnect();
-        console.log('[Cherry] tryReconnect() resultado:', reconnected);
-
-        if (reconnected) {
-            layout = await readLayoutFile();
-            console.log('[Cherry] layout leído del archivo:', layout);
-        }
-
-        if (!layout || !layout.length) {
-            console.log('[Cherry] archivo vacío/sin reconexión, usando fallback localStorage');
-            layout = loadSavedLayout();
-            console.log('[Cherry] layout desde localStorage:', layout);
-        }
-
-        if (layout && layout.length) {
-            console.log('[Cherry] aplicando layout con', layout.length, 'widgets');
-            applySavedLayout(layout);
-        } else {
-            console.log('[Cherry] ❌ no hay ningún layout disponible, guardando estado inicial');
-            await saveCurrentLayout();
-        }
+    if (reconnected) {
+        const raw = await readLayoutFile();
+        state = normalizeLoadedState(raw);
     }
+
+    if (!state.widgets.length) {
+        state = loadSavedLayout();
+    }
+
+    applySavedAppearance(state.appearance);
+
+    if (state.widgets.length) {
+        applySavedLayout(state.widgets);
+    } else {
+        await saveCurrentLayout();
+    }
+}
 
 await bootLayout();
 

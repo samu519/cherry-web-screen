@@ -5,10 +5,14 @@
 
 @import "./variables.css";
 
+
+
 @import "./base/reset.css";
 
 @import "./layout/canvas.css";
 @import "./layout/grid.css";
+
+@import "./background.css";
 
 @import "./widgets/widget.css";
 @import "./widgets/clock.css";

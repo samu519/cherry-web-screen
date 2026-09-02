@@ -44,7 +44,7 @@ export class OverlayManager {
         };
 
         document.addEventListener('keydown', this._onKeydown);
-        document.addEventListener('click', this._onClick);
+        document.addEventListener('click', this._onClick, true);
     }
 
 
@@ -56,6 +56,10 @@ export class OverlayManager {
 
         if (this.overlays.has(id)) {
             this.close(id);
+        }
+
+        if (this.activeOverlay && this.activeOverlay !== id) {
+            this.close(this.activeOverlay);
         }
 
         const {
@@ -78,13 +82,15 @@ export class OverlayManager {
 
         this.container.appendChild(overlay);
 
-        // Calcular posición
         const finalPosition = this.calculatePosition(overlay, position, anchor, align);
 
         overlay.style.position = 'fixed';
         overlay.style.left = finalPosition.x + 'px';
         overlay.style.top = finalPosition.y + 'px';
         overlay.style.zIndex = '9999';
+        overlay.style.opacity = '0';
+        overlay.style.transform = 'translateY(10px) scale(0.97)';
+        overlay.style.transition = 'opacity 180ms ease, transform 180ms cubic-bezier(0.16, 1, 0.3, 1)';
 
         this.overlays.set(id, {
             element: overlay,
@@ -95,12 +101,23 @@ export class OverlayManager {
 
         this.activeOverlay = id;
 
-        // Trigger CSS animation
         requestAnimationFrame(() => {
             overlay.classList.add('visible');
+            overlay.style.opacity = '1';
+            overlay.style.transform = 'translateY(0) scale(1)';
         });
 
         return overlay;
+    }
+
+    open({ id, content, position, anchor, align, onClose } = {}) {
+        return this.create(id || 'overlay', {
+            content,
+            position,
+            anchor,
+            align,
+            onClose
+        });
     }
 
 

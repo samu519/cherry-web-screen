@@ -1,0 +1,104 @@
+/* =========================================================
+   CHERRY — DYNAMIC BACKGROUND
+   3 puntos de color derivados del accent, pintados como
+   pseudo-elemento de #cherry-canvas (sin nodos extra en HTML).
+   ========================================================= */
+
+:root {
+
+    /* Los 3 puntos se derivan del --cherry-accent rotando su matiz
+       (CSS Relative Color Syntax — soportado en navegadores modernos). */
+    --cherry-bg-point-1: var(--cherry-accent);
+    --cherry-bg-point-2: hsl(from var(--cherry-accent) calc(h + 50) s l);
+    --cherry-bg-point-3: hsl(from var(--cherry-accent) calc(h - 50) s l);
+
+    --cherry-bg-blur: 70px;
+    --cherry-bg-opacity: 0.55;
+    --cherry-bg-duration: 24s;
+}
+
+[data-theme="dark"] {
+
+    --cherry-bg-opacity: 0.7;
+    --cherry-bg-blur: 90px;
+}
+
+
+/* =========================================================
+   BLOBS — detrás de los widgets (z-index 0 vs 1 de .cherry-widget)
+   ========================================================= */
+
+#cherry-canvas::after {
+
+    content: "";
+
+    position: absolute;
+    inset: -25%;
+
+    z-index: 0;
+
+    pointer-events: none;
+
+    background-repeat: no-repeat;
+
+    background-image:
+        radial-gradient(
+            circle at 20% 20%,
+            color-mix(in srgb, var(--cherry-bg-point-1) 75%, transparent),
+            transparent 45%
+        ),
+        radial-gradient(
+            circle at 80% 30%,
+            color-mix(in srgb, var(--cherry-bg-point-2) 70%, transparent),
+            transparent 45%
+        ),
+        radial-gradient(
+            circle at 50% 85%,
+            color-mix(in srgb, var(--cherry-bg-point-3) 65%, transparent),
+            transparent 45%
+        );
+
+    filter: blur(var(--cherry-bg-blur));
+
+    opacity: var(--cherry-bg-opacity);
+
+    animation: cherry-canvas-bg-move var(--cherry-bg-duration) ease-in-out infinite;
+
+    transition: opacity var(--cherry-transition-slow);
+}
+
+
+/* =========================================================
+   ANIMACIÓN — los 3 puntos se desplazan lentamente
+   ========================================================= */
+
+@keyframes cherry-canvas-bg-move {
+
+    0% {
+        background-position: 20% 20%, 80% 30%, 50% 85%;
+    }
+
+    33% {
+        background-position: 32% 35%, 65% 15%, 35% 70%;
+    }
+
+    66% {
+        background-position: 12% 40%, 78% 45%, 58% 60%;
+    }
+
+    100% {
+        background-position: 20% 20%, 80% 30%, 50% 85%;
+    }
+}
+
+
+/* =========================================================
+   ACCESIBILIDAD
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    #cherry-canvas::after {
+        animation: none;
+    }
+}

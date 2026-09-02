@@ -9,6 +9,7 @@ import { SelectionManager } from './managers/SelectionManager.js';
 import { SnapManager } from './managers/SnapManager.js';
 import { CanvasAdapter } from './CanvasAdapter.js';
 import { EditorHistory } from './managers/EditorHistory.js';
+import { LongPressManager } from '../core/interaction/LongPressManager.js';
 
 import { ClockWidget } from '../widgets/clock/ClockWidget.js';
 import { MediaWidget } from '../widgets/media/mediawidget.js';
@@ -47,6 +48,7 @@ export class Editor {
         this.snapManager = new SnapManager(this.state, 12);
         this.canvasAdapter = new CanvasAdapter(this.canvas, this.state);
         this.history = new EditorHistory(80);
+        this.longPressManager = null;
 
 
         /* -------------------------------------------------
@@ -82,7 +84,33 @@ export class Editor {
 
     initialize() {
 
+        this.history = this.history || new EditorHistory(80);
+
         this.createEditorLayout();
+
+        this.overlayManager = new OverlayManager(this.canvasViewport || document.body);
+        this.selectionManager = new SelectionManager(this.state, this.canvasElement);
+        this.snapManager = new SnapManager(this.state, 12);
+        this.canvasAdapter = new CanvasAdapter(this.canvas, this.state);
+
+        this.longPressManager = new LongPressManager({
+            root: this.canvasViewport || document.body,
+            overlayManager: this.overlayManager,
+            threshold: 500,
+            onOpen: ({ target, title, actions }) => {
+                this.state.notify();
+                if (target && target.classList) {
+                    target.classList.add('cherry-widget--long-press-active');
+                }
+            },
+            onClose: () => {
+                document.querySelectorAll('.cherry-widget--long-press-active').forEach(el => {
+                    el.classList.remove('cherry-widget--long-press-active');
+                });
+            }
+        });
+
+        this.registerLongPressTargets();
         this.bindStateToCanvas();
         this.setupCanvasInteractions();
         this.setupSelectionInteractions();
@@ -93,10 +121,10 @@ export class Editor {
     }
 
 
-_onDocument(event, handler) {
-    this._onDocument(event, handler);
-    this._boundHandlers.push({ event, handler });
-}
+    _onDocument(event, handler) {
+        document.addEventListener(event, handler);   // ✅ llama al DOM real, no a sí mismo
+        this._boundHandlers.push({ event, handler });
+    }
 
 
     /* =====================================================
@@ -174,14 +202,24 @@ _onDocument(event, handler) {
         const accentControl = this.createColorControl(
             'Accent',
             this.state.accentColor,
-            (color) => this.state.setAccentColor(color)
+            (color) => {
+                this.state.setAccentColor(color);
+                if (window.cherryApp && typeof window.cherryApp.saveLayout === 'function') {
+                    window.cherryApp.saveLayout();
+                }
+            }
         );
 
         const themeControl = this.createButtonGroup(
             'Tema',
             ['Light', 'Dark'],
             this.state.themeMode === 'dark' ? 1 : 0,
-            (idx) => this.state.setThemeMode(idx === 0 ? 'light' : 'dark')
+            (idx) => {
+                this.state.setThemeMode(idx === 0 ? 'light' : 'dark');
+                if (window.cherryApp && typeof window.cherryApp.saveLayout === 'function') {
+                    window.cherryApp.saveLayout();
+                }
+            }
         );
 
         appearanceSection.appendChild(appearanceTitle);
@@ -671,11 +709,19 @@ _onDocument(event, handler) {
         redoBtn.disabled = true;
 
         const updateHistoryButtons = () => {
+            if (!this.history || typeof this.history.canUndo !== 'function') {
+                undoBtn.disabled = true;
+                redoBtn.disabled = true;
+                return;
+            }
+
             undoBtn.disabled = !this.history.canUndo();
             redoBtn.disabled = !this.history.canRedo();
         };
 
-        this.history.subscribe(updateHistoryButtons);
+        if (this.history && typeof this.history.subscribe === 'function') {
+            this.history.subscribe(updateHistoryButtons);
+        }
         updateHistoryButtons();
 
         undoBtn.addEventListener('click', () => {
@@ -1167,6 +1213,65 @@ _onDocument(event, handler) {
         });
     }
 
+
+    /* =====================================================
+       REGISTRAR CONTROLES QUE SOPORTAN LONG PRESS
+       ===================================================== */
+
+    registerLongPressTargets() {
+        if (!this.canvasElement || !this.longPressManager) {
+            return;
+        }
+
+        const registerWidget = (widgetEl) => {
+            if (!widgetEl || widgetEl.dataset.longPressRegistered === 'true') {
+                return;
+            }
+
+            const widgetId = widgetEl.dataset.widgetId;
+            const widgetObject = this.canvasAdapter?.getWidget(widgetId);
+            const actions = this.getWidgetContextActions(widgetId, widgetObject).map((action) => ({
+                ...action,
+                callback: (event, item) => {
+                    if (item && item.action) {
+                        this.executeWidgetAction(widgetId, item.action, item.value);
+                    }
+                }
+            }));
+
+            this.longPressManager.register(widgetEl, {
+                title: widgetObject?.type || 'Control',
+                actions,
+                onAction: () => {
+                    if (this.overlayManager && typeof this.overlayManager.closeAll === 'function') {
+                        this.overlayManager.closeAll();
+                    }
+                }
+            });
+
+            widgetEl.dataset.longPressRegistered = 'true';
+        };
+
+        this.canvasElement.querySelectorAll('.cherry-widget').forEach(registerWidget);
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType !== 1) {
+                        return;
+                    }
+                    if (node.matches?.('.cherry-widget')) {
+                        registerWidget(node);
+                    }
+                    if (node.querySelectorAll) {
+                        node.querySelectorAll('.cherry-widget').forEach(registerWidget);
+                    }
+                });
+            });
+        });
+
+        this.longPressObserver = observer;
+        observer.observe(this.canvasElement, { childList: true, subtree: true });
+    }
 
     /* =====================================================
        SETUP TOOLBAR INTERACTIONS

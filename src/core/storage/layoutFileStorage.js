@@ -169,33 +169,18 @@ export async function reconnectWithPermission() {
 
 export async function readLayoutFile() {
 
-    console.log('[Cherry Storage] readLayoutFile() iniciando...');
-
     const handle = await getStoredHandle();
-
-    if (!handle) {
-        console.log('[Cherry Storage] ❌ no hay handle, no se puede leer');
-        return null;
-    }
+    if (!handle) return null;
 
     try {
         const file = await handle.getFile();
         const text = await file.text();
+        if (!text) return null;
 
-        console.log('[Cherry Storage] contenido crudo leído del archivo:', text);
-
-        if (!text) {
-            console.log('[Cherry Storage] ❌ archivo vacío');
-            return null;
-        }
-
-        const parsed = JSON.parse(text);
-        console.log('[Cherry Storage] JSON parseado:', parsed);
-
-        return Array.isArray(parsed) ? parsed : null;
+        return JSON.parse(text);
 
     } catch (error) {
-        console.error('[Cherry Storage] ❌ error al leer/parsear:', error);
+        console.warn('Cherry: no se pudo leer el archivo de layout', error);
         return null;
     }
 }
