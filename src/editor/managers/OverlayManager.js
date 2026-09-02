@@ -28,22 +28,23 @@ export class OverlayManager {
 
     setupGlobalHandlers() {
 
-        // Cerrar overlays con ESC
-        document.addEventListener('keydown', (e) => {
+        this._onKeydown = (e) => {
             if (e.key === 'Escape' && this.activeOverlay) {
                 this.close(this.activeOverlay);
             }
-        });
+        };
 
-        // Cerrar overlays con click fuera
-        document.addEventListener('click', (e) => {
+        this._onClick = (e) => {
             if (this.activeOverlay) {
                 const overlay = this.overlays.get(this.activeOverlay);
                 if (overlay && !overlay.element.contains(e.target)) {
                     this.close(this.activeOverlay);
                 }
             }
-        });
+        };
+
+        document.addEventListener('keydown', this._onKeydown);
+        document.addEventListener('click', this._onClick);
     }
 
 
@@ -277,5 +278,15 @@ export class OverlayManager {
     getActive() {
 
         return this.activeOverlay;
+    }
+
+    /* =====================================================
+    DESTRUIR (limpiar listeners de document)
+    ===================================================== */
+
+    destroy() {
+        this.closeAll();
+        if (this._onKeydown) document.removeEventListener('keydown', this._onKeydown);
+        if (this._onClick) document.removeEventListener('click', this._onClick);
     }
 }

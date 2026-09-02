@@ -1,18 +1,9 @@
-import { Canvas } from "../core/canvas/Canvas.js";
+import { Canvas } from "../core/canvas/canvas.js";
 import { initializeEditor } from "../editor/index.js";
 import { EditorEntryButton } from "../editor/ui/EditorEntryButton.js";
 
-import {
-    linkLayoutFile,
-    tryReconnect,
-    readLayoutFile,
-    writeLayoutFile,
-    isFileStorageSupported,
-    hasLinkedFile
-} from "../core/storage/layoutFileStorage.js";
-
 import { ClockWidget }
-    from "../widgets/clock/ClockWidget.js";
+    from "../widgets/clock/clockwidget.js";
 
 import { MediaWidget }
     from "../widgets/media/mediawidget.js";
@@ -24,16 +15,26 @@ import { ControlsWidget }
     from "../widgets/controls/controlswidget.js";
 
 import { MediaVisualWidget }
-    from "../widgets/visual/mediavisualwidget.js";    
+    from "../widgets/visual/mediavisualwidget.js";
 
 import { TextWidget }
     from "../widgets/text/textwidget.js";
 
-import {ToggleWidget}
+import { ToggleWidget }
     from "../widgets/controls/togglewidget.js";
 
-import { SliderWidget } 
+import { SliderWidget }
     from "../widgets/controls/sliderwidget.js";
+
+import {
+    linkLayoutFile,
+    reconnectWithPermission,
+    tryReconnect,
+    readLayoutFile,
+    writeLayoutFile,
+    isFileStorageSupported,
+    hasLinkedFile
+} from "../core/storage/layoutFileStorage.js";
 
 
 // =====================================================
@@ -46,7 +47,14 @@ let editorEntryButton = null;
 let currentLayoutState = [];
 const LAYOUT_STORAGE_KEY = 'cherry-layout-state-v1';
 
+
+// =====================================================
+// GUARDAR LAYOUT (archivo real + respaldo localStorage)
+// =====================================================
 async function saveCurrentLayout() {
+
+    console.log('[Cherry] saveCurrentLayout() llamado');
+
     currentLayoutState = canvas.widgets.map(widget => ({
         id: widget.id,
         type: widget.type,
@@ -59,15 +67,18 @@ async function saveCurrentLayout() {
         state: { ...widget.state }
     }));
 
-    // Respaldo local inmediato
+    console.log('[Cherry] layout capturado:', currentLayoutState);
+
     try {
         window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(currentLayoutState));
+        console.log('[Cherry] ✅ respaldo guardado en localStorage');
     } catch (error) {
         console.warn('Cherry: no se pudo guardar el respaldo en localStorage', error);
     }
 
-    // Escritura real en archivo (si ya está vinculado)
+    console.log('[Cherry] intentando escribir en archivo...');
     const wrote = await writeLayoutFile(currentLayoutState);
+    console.log('[Cherry] resultado de writeLayoutFile:', wrote);
 
     if (window.cherryApp) {
         window.cherryApp.layoutState = currentLayoutState;
@@ -77,28 +88,68 @@ async function saveCurrentLayout() {
     return currentLayoutState;
 }
 
-async function bootLayout() {
 
-    let layout = null;
+// =====================================================
+// CARGAR LAYOUT DESDE LOCALSTORAGE (fallback)
+// =====================================================
 
-    const reconnected = await tryReconnect();
+function loadSavedLayout() {
+    try {
+        const saved = window.localStorage.getItem(LAYOUT_STORAGE_KEY);
+        if (!saved) return [];
 
-    if (reconnected) {
-        layout = await readLayoutFile();
-    }
-
-    if (!layout || !layout.length) {
-        layout = loadSavedLayout(); // fallback a localStorage
-    }
-
-    if (layout && layout.length) {
-        applySavedLayout(layout);
-    } else {
-        await saveCurrentLayout();
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        console.warn('Cherry: no se pudo cargar el layout persistente', error);
+        return [];
     }
 }
 
-await bootLayout();
+
+// =====================================================
+// APLICAR LAYOUT GUARDADO A LOS WIDGETS EXISTENTES
+// =====================================================
+
+function applySavedLayout(layoutState = []) {
+    if (!Array.isArray(layoutState) || !layoutState.length) return;
+
+    layoutState.forEach(saved => {
+        const widget = canvas.widgets.find(item => item.id === saved.id);
+        if (!widget) return;
+
+        widget.size = saved.size;
+        widget.variant = saved.variant;
+        widget.style = saved.style;
+        widget.layout = { ...saved.layout };
+        widget.settings = { ...saved.settings };
+        widget.state = { ...saved.state };
+
+        if (typeof widget.setSize === 'function') {
+            widget.setSize(saved.size);
+        }
+        if (typeof widget.setVariant === 'function') {
+            widget.setVariant(saved.variant);
+        }
+        if (typeof widget.setStyle === 'function') {
+            widget.setStyle(saved.style);
+        }
+
+        // Restauramos la posición EXACTA en píxeles, sin recalcular
+        // desde la grilla (eso descartaría los movimientos libres del editor).
+        widget.setGeometry({ ...saved.geometry });
+
+        if (widget.element) {
+            widget.render();
+        }
+    });
+
+    currentLayoutState = layoutState;
+    if (window.cherryApp) {
+        window.cherryApp.layoutState = currentLayoutState;
+    }
+}
+
 
 // =====================================================
 // CREAR CANVAS
@@ -118,6 +169,7 @@ const canvas = new Canvas({
 // =====================================================
 
 const clock = new ClockWidget({
+    id: "clock-main",
     size: "medium",
     style: "onlyclock",
     variant: "translucid",
@@ -129,6 +181,7 @@ const clock = new ClockWidget({
 
 
 const media = new MediaWidget({
+    id: "media-main",
     size: "large",
     style: "artworkProtagonist",
     layout: {
@@ -138,6 +191,7 @@ const media = new MediaWidget({
 
 
 const system = new SystemWidget({
+    id: "system-main",
     size: "cardhorizontal",
     style: "circular",
     layout: {
@@ -147,6 +201,7 @@ const system = new SystemWidget({
 
 
 const controls = new ControlsWidget({
+    id: "controls-main",
     size: "mini",
     style: "buttons",
     layout: {
@@ -155,6 +210,7 @@ const controls = new ControlsWidget({
 });
 
 const mediaVisual = new MediaVisualWidget({
+    id: "media-visual-main",
     size: "medium",
     style: "visualizer",
     layout: {
@@ -165,6 +221,7 @@ const mediaVisual = new MediaVisualWidget({
 });
 
 const text = new TextWidget({
+    id: "text-main",
     size: "small",
     layout: {
         column: 2,
@@ -196,7 +253,7 @@ const wifi2 =
         }
     });
 
-const sliderA  =
+const sliderA =
     new SliderWidget({
 
         id: "volume-slider-a",
@@ -265,12 +322,42 @@ canvas.addWidget(system);
 canvas.addWidget(controls);
 canvas.addWidget(text);
 
-const savedLayout = loadSavedLayout();
-if (savedLayout.length) {
-    applySavedLayout(savedLayout);
-} else {
-    saveCurrentLayout();
-}
+
+// =====================================================
+// BOOT: CARGAR LAYOUT GUARDADO (archivo o localStorage)
+// =====================================================
+
+    async function bootLayout() {
+
+        console.log('[Cherry] bootLayout() iniciando...');
+
+        let layout = null;
+
+        const reconnected = await tryReconnect();
+        console.log('[Cherry] tryReconnect() resultado:', reconnected);
+
+        if (reconnected) {
+            layout = await readLayoutFile();
+            console.log('[Cherry] layout leído del archivo:', layout);
+        }
+
+        if (!layout || !layout.length) {
+            console.log('[Cherry] archivo vacío/sin reconexión, usando fallback localStorage');
+            layout = loadSavedLayout();
+            console.log('[Cherry] layout desde localStorage:', layout);
+        }
+
+        if (layout && layout.length) {
+            console.log('[Cherry] aplicando layout con', layout.length, 'widgets');
+            applySavedLayout(layout);
+        } else {
+            console.log('[Cherry] ❌ no hay ningún layout disponible, guardando estado inicial');
+            await saveCurrentLayout();
+        }
+    }
+
+await bootLayout();
+
 
 // =====================================================
 // CREAR BOTÓN DE ENTRADA AL EDITOR
@@ -294,66 +381,49 @@ function enterEditorMode() {
 
     editorMode = true;
 
-    // Inicializar editor
     editor = initializeEditor(canvas, {});
 
-    // Ocultar botón de entrada
     editorEntryButton.hide();
 
-    // Exponer editor en window para debugging
     window.cherryEditor = editor;
 
     console.log('✓ Editor mode active');
 }
 
 
-// =====================================================
-// FUNCIÓN: SALIR DEL MODO EDITOR
-// =====================================================
+    // =====================================================
+    // FUNCIÓN: SALIR DEL MODO EDITOR
+    // =====================================================
 
-function restoreCanvasToPage() {
-    if (!canvas || !canvas.element) return;
+    function restoreCanvasToPage() {
+        if (!canvas || !canvas.element) return;
 
-    let mainCanvas = document.querySelector('main#cherry-canvas');
-    if (!mainCanvas) {
-        mainCanvas = document.createElement('main');
-        mainCanvas.id = 'cherry-canvas';
-        document.body.appendChild(mainCanvas);
-    }
+        // El canvas ya fue reinsertado en su lugar original por Editor.exitEditor().
+        // Solo nos aseguramos de que el botón de entrada exista y sea visible.
+        canvas.element.style.display = 'block';
 
-    mainCanvas.style.position = 'relative';
-
-    if (canvas.element.parentNode !== mainCanvas) {
-        mainCanvas.innerHTML = '';
-        mainCanvas.appendChild(canvas.element);
-    }
-
-    if (!editorEntryButton || !editorEntryButton.button || !editorEntryButton.button.isConnected) {
-        editorEntryButton = new EditorEntryButton(canvas.element, enterEditorMode);
-    } else if (editorEntryButton.button.parentNode !== mainCanvas) {
-        mainCanvas.appendChild(editorEntryButton.button);
-    }
-
-    editorEntryButton.show();
-    canvas.element.style.display = 'block';
-
-    canvas.widgets.forEach(widget => {
-        if (widget && typeof widget.render === 'function') {
-            widget.render();
+        if (!editorEntryButton || !editorEntryButton.button || !editorEntryButton.button.isConnected) {
+            editorEntryButton = new EditorEntryButton(canvas.element, enterEditorMode);
         }
-    });
-}
 
-function exitEditorMode() {
+        editorEntryButton.show();
+
+        canvas.widgets.forEach(widget => {
+            if (widget && typeof widget.render === 'function') {
+                widget.render();
+            }
+        });
+    }
+
+async function exitEditorMode() {
 
     if (!editorMode || !editor) return;
 
     console.log('✓ Exiting editor mode...');
 
-    saveCurrentLayout();
+    await saveCurrentLayout();
     editorMode = false;
 
-    // Destruir editor y restaurar canvas visible
     const editorContainer = document.getElementById('cherry-editor');
     if (editorContainer && editorContainer.parentNode) {
         editorContainer.remove();
@@ -364,56 +434,97 @@ function exitEditorMode() {
     editor = null;
     window.cherryEditor = null;
 
-    // Mostrar botón de entrada
     editorEntryButton.show();
 
     console.log('✓ Back to normal mode');
 }
 
-function createLinkFileButton() {
 
-    if (!isFileStorageSupported()) {
-        console.warn('Cherry: este navegador no soporta guardar en archivo. Usa Chrome o Edge.');
-        return;
+// =====================================================
+// BOTÓN: VINCULAR ARCHIVO DE LAYOUT
+// =====================================================
+
+    function createLinkFileButton() {
+
+        if (!isFileStorageSupported()) {
+            console.warn('Cherry: este navegador no soporta guardar en archivo. Usa Chrome o Edge.');
+            return;
+        }
+
+        const button = document.createElement('button');
+        button.className = 'cherry-editor-entry-button';
+        button.style.top = '56px';
+        button.innerHTML = `
+            <span class="cherry-editor-entry-button__icon">💾</span>
+            <span class="cherry-editor-entry-button__label">Vincular archivo</span>
+        `;
+
+        const labelEl = () => button.querySelector('.cherry-editor-entry-button__label');
+
+        const refreshState = async () => {
+
+            const linked = await hasLinkedFile();
+
+            if (!linked) {
+                labelEl().textContent = 'Vincular archivo';
+                button.title = 'Elegir o crear el archivo donde se guarda el layout';
+                return 'none';
+            }
+
+            const silentlyOk = await tryReconnect();
+
+            if (silentlyOk) {
+                labelEl().textContent = 'Archivo vinculado ✓';
+                button.title = 'El layout se guarda en tu archivo automáticamente';
+                return 'granted';
+            }
+
+            labelEl().textContent = 'Reconectar archivo';
+            button.title = 'Haz click para volver a dar permiso y cargar tus datos guardados';
+            return 'needs-permission';
+        };
+
+        button.addEventListener('click', async () => {
+
+            const linked = await hasLinkedFile();
+
+            if (!linked) {
+                const ok = await linkLayoutFile();
+                if (ok) {
+                    await saveCurrentLayout();
+                }
+                await refreshState();
+                return;
+            }
+
+            // Ya hay un archivo vinculado, pero el permiso se perdió
+            // (típico tras un reload) — este click SÍ cuenta como
+            // "user activation", así que aquí sí podemos pedirlo.
+            const { ok, layout } = await reconnectWithPermission();
+
+            if (ok && layout && layout.length) {
+                applySavedLayout(layout);
+            }
+
+            await refreshState();
+        });
+
+        canvas.element.parentNode.appendChild(button);
+        refreshState();
     }
 
-    const button = document.createElement('button');
-    button.className = 'cherry-editor-entry-button';
-    button.style.top = '56px'; // debajo del botón "Editar"
-    button.innerHTML = `
-        <span class="cherry-editor-entry-button__icon">💾</span>
-        <span class="cherry-editor-entry-button__label">Vincular archivo</span>
-    `;
-    button.title = 'Elegir o crear el archivo donde se guarda el layout';
-
-    const refreshLabel = async () => {
-        const linked = await hasLinkedFile();
-        button.querySelector('.cherry-editor-entry-button__label').textContent =
-            linked ? 'Archivo vinculado ✓' : 'Vincular archivo';
-    };
-
-    button.addEventListener('click', async () => {
-        const ok = await linkLayoutFile();
-        if (ok) {
-            await saveCurrentLayout();
-        }
-        refreshLabel();
-    });
-
-    canvas.element.parentNode.appendChild(button);
-    refreshLabel();
-}
-
 createLinkFileButton();
+
+
 // =====================================================
-// EXPOSER FUNCIONES GLOBALES PARA DEBUGGING
+// EXPONER FUNCIONES GLOBALES PARA DEBUGGING
 // =====================================================
 
 window.cherryApp = {
     canvas,
     layoutState: currentLayoutState,
     saveLayout: saveCurrentLayout,
-    restoreLayout: () => {
+    restoreLayout: async () => {
         const saved = loadSavedLayout();
         if (!saved.length) return;
         applySavedLayout(saved);

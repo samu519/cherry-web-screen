@@ -25,6 +25,11 @@ export class Editor {
 
         this.canvas = canvas;
         this.canvasElement = this.canvas.element;
+        
+        this.originalParent = this.canvasElement.parentNode;
+        this.originalNextSibling = this.canvasElement.nextSibling;
+
+        this._boundHandlers = [];
 
         /* -------------------------------------------------
            ESTADO
@@ -86,6 +91,12 @@ export class Editor {
 
         console.log('✓ Cherry Editor initialized');
     }
+
+
+_onDocument(event, handler) {
+    this._onDocument(event, handler);
+    this._boundHandlers.push({ event, handler });
+}
 
 
     /* =====================================================
@@ -431,7 +442,6 @@ export class Editor {
                 existing.variant = saved.variant;
                 existing.style = saved.style;
                 existing.layout = { ...saved.layout };
-                existing.geometry = { ...saved.geometry };
                 existing.settings = { ...saved.settings };
                 existing.state = { ...saved.state };
                 if (typeof existing.setSize === 'function') {
@@ -443,7 +453,10 @@ export class Editor {
                 if (typeof existing.setStyle === 'function') {
                     existing.setStyle(saved.style);
                 }
-                this.canvas.updateWidgetLayout(existing);
+                existing.setGeometry({ ...saved.geometry });
+                if (existing.element) {
+                    existing.render();
+                }
                 return;
             }
 
@@ -803,7 +816,7 @@ export class Editor {
         });
 
         // Keyboard shortcut para salir
-        document.addEventListener('keydown', (e) => {
+        this._onDocument('keydown', (e) => {
 
     if (e.key === 'Escape' && !this.overlayManager.getActive()) {
         this.exitEditor();
@@ -902,7 +915,7 @@ export class Editor {
             }
         });
 
-        document.addEventListener('click', (e) => {
+        this._onDocument('click', (e) => {
             const clickedInsideEditor = e.target.closest('#cherry-editor');
             const clickedInsideWidget = e.target.closest('.cherry-widget');
             const clickedInSelectionHandle = e.target.closest('.cherry-resize-handle, .cherry-widget-menu-button, .cherry-selection-outline');
@@ -967,7 +980,7 @@ export class Editor {
             }
         });
 
-        document.addEventListener('mousemove', (e) => {
+        this._onDocument('mousemove', (e) => {
 
             if (this.isDragging && this.dragGroupStartGeometry && this.dragGroupStartGeometry.size > 0) {
 
@@ -1078,7 +1091,7 @@ export class Editor {
             }
         });
 
-        document.addEventListener('mouseup', (e) => {
+        this._onDocument('mouseup', (e) => {
 
             if (this.isDragging && this.dragGroupStartGeometry) {
 
@@ -1129,7 +1142,7 @@ export class Editor {
     setupSelectionInteractions() {
 
         // Botón de menú contextual
-        document.addEventListener('click', (e) => {
+        this._onDocument('click', (e) => {
 
             if (e.target.classList.contains('cherry-widget-menu-button')) {
                 const widgetId = e.target.dataset.widgetId;
@@ -1140,7 +1153,7 @@ export class Editor {
         });
 
         // Resize handles
-        document.addEventListener('mousedown', (e) => {
+        this._onDocument('mousedown', (e) => {
 
             if (e.target.classList.contains('cherry-resize-handle')) {
                 this.isResizing = true;
@@ -1478,24 +1491,45 @@ export class Editor {
 
 
     /* =====================================================
-       SALIR DEL EDITOR
-       ===================================================== */
+   SALIR DEL EDITOR
+   ===================================================== */
 
-    exitEditor() {
+exitEditor() {
 
-        console.log('✓ Exiting editor...');
+    console.log('✓ Exiting editor...');
 
-        // Limpiar overlays
-        this.overlayManager.closeAll();
+    // Limpiar overlays
+    this.overlayManager.closeAll();
 
-        // Remover container del editor
-        if (this.editorContainer && this.editorContainer.parentNode) {
-            this.editorContainer.remove();
-        }
-
-        // Llamar callback de salida si existe
-        if (window.cherryApp && window.cherryApp.exitEditor) {
-            window.cherryApp.exitEditor();
+    // Devolver el canvas a su ubicación ORIGINAL antes de destruir
+    // el contenedor del editor (evita que quede huérfano/detached)
+    if (this.originalParent) {
+        if (this.originalNextSibling && this.originalNextSibling.parentNode === this.originalParent) {
+            this.originalParent.insertBefore(this.canvasElement, this.originalNextSibling);
+        } else {
+            this.originalParent.appendChild(this.canvasElement);
         }
     }
+
+    // Remover container del editor (ya sin el canvas adentro)
+    if (this.editorContainer && this.editorContainer.parentNode) {
+        this.editorContainer.remove();
+    }
+
+    // Quitar TODOS los listeners de document que esta instancia registró
+    this._boundHandlers.forEach(({ event, handler }) => {
+        document.removeEventListener(event, handler);
+    });
+    this._boundHandlers = [];
+
+    // Destruir el overlay manager (sus propios listeners de document)
+    if (typeof this.overlayManager.destroy === 'function') {
+        this.overlayManager.destroy();
+    }
+
+    // Llamar callback de salida si existe
+    if (window.cherryApp && window.cherryApp.exitEditor) {
+        window.cherryApp.exitEditor();
+    }
+}
 }

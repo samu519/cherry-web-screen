@@ -45,63 +45,122 @@ async function idbSet(key, value) {
 let cachedHandle = null;
 
 async function getStoredHandle() {
-    if (cachedHandle) return cachedHandle;
+    if (cachedHandle) {
+        console.log('[Cherry Storage] usando handle en caché');
+        return cachedHandle;
+    }
     try {
         cachedHandle = await idbGet(HANDLE_KEY);
+        console.log('[Cherry Storage] handle recuperado de IndexedDB:', cachedHandle);
         return cachedHandle;
-    } catch {
+    } catch (error) {
+        console.error('[Cherry Storage] error leyendo IndexedDB:', error);
         return null;
     }
 }
 
-async function verifyPermission(handle, mode = 'readwrite') {
-    const options = { mode };
-    if ((await handle.queryPermission(options)) === 'granted') return true;
-    if ((await handle.requestPermission(options)) === 'granted') return true;
-    return false;
-}
-
 /* =====================================================
-   VINCULAR / CREAR ARCHIVO (requiere click del usuario)
+   VERIFICAR PERMISO SIN PEDIRLO (no requiere click)
    ===================================================== */
 
-export async function linkLayoutFile() {
-
-    if (!isSupported()) {
-        console.warn('Cherry: File System Access API no soportada en este navegador.');
-        return false;
-    }
-
+async function checkPermissionSilently(handle, mode = 'readwrite') {
     try {
-        const handle = await window.showSaveFilePicker({
-            suggestedName: 'cherry-layout.json',
-            types: [{
-                description: 'Cherry Layout JSON',
-                accept: { 'application/json': ['.json'] }
-            }]
-        });
-
-        await idbSet(HANDLE_KEY, handle);
-        cachedHandle = handle;
-        return true;
-
-    } catch (error) {
-        return false; // usuario canceló el picker
+        const status = await handle.queryPermission({ mode });
+        return status === 'granted';
+    } catch {
+        return false;
     }
 }
 
 /* =====================================================
-   RECONECTAR SILENCIOSAMENTE AL ARCHIVO YA VINCULADO
+   PEDIR PERMISO (requiere click del usuario)
+   ===================================================== */
+
+async function requestPermission(handle, mode = 'readwrite') {
+    try {
+        const status = await handle.requestPermission({ mode });
+        return status === 'granted';
+    } catch {
+        return false;
+    }
+}
+
+/* =====================================================
+   VINCULAR / CREAR ARCHIVO NUEVO (requiere click)
+   ===================================================== */
+
+    export async function linkLayoutFile() {
+
+        if (!isSupported()) {
+            console.warn('Cherry: File System Access API no soportada en este navegador.');
+            return false;
+        }
+
+        try {
+            const handle = await window.showSaveFilePicker({
+                suggestedName: 'cherry-layout.json',
+                types: [{
+                    description: 'Cherry Layout JSON',
+                    accept: { 'application/json': ['.json'] }
+                }]
+            });
+
+            console.log('[Cherry Storage] archivo elegido:', handle);
+
+            await idbSet(HANDLE_KEY, handle);
+            cachedHandle = handle;
+
+            console.log('[Cherry Storage] ✅ handle guardado en IndexedDB');
+            return true;
+
+        } catch (error) {
+            console.error('[Cherry Storage] picker cancelado o falló:', error);
+            return false;
+        }
+    }
+
+/* =====================================================
+   RECONEXIÓN SILENCIOSA (al cargar la página, sin click)
+   Solo funciona si Chrome todavía recuerda el permiso.
    ===================================================== */
 
 export async function tryReconnect() {
 
-    if (!isSupported()) return false;
+    console.log('[Cherry Storage] tryReconnect() iniciando...');
+
+    if (!isSupported()) {
+        console.log('[Cherry Storage] ❌ API no soportada');
+        return false;
+    }
 
     const handle = await getStoredHandle();
-    if (!handle) return false;
 
-    return verifyPermission(handle, 'readwrite').catch(() => false);
+    if (!handle) {
+        console.log('[Cherry Storage] ❌ no hay handle guardado en IndexedDB');
+        return false;
+    }
+
+    const result = await checkPermissionSilently(handle, 'readwrite');
+    console.log('[Cherry Storage] tryReconnect() → permiso silencioso:', result);
+
+    return result;
+}
+
+/* =====================================================
+   RECONEXIÓN MANUAL (desde un click) — pide permiso
+   y devuelve el layout leído si tiene éxito
+   ===================================================== */
+
+export async function reconnectWithPermission() {
+
+    const handle = await getStoredHandle();
+    if (!handle) return { ok: false, layout: null };
+
+    const granted = await requestPermission(handle, 'readwrite');
+    if (!granted) return { ok: false, layout: null };
+
+    const layout = await readLayoutFile();
+    return { ok: true, layout };
 }
 
 /* =====================================================
@@ -110,19 +169,33 @@ export async function tryReconnect() {
 
 export async function readLayoutFile() {
 
+    console.log('[Cherry Storage] readLayoutFile() iniciando...');
+
     const handle = await getStoredHandle();
-    if (!handle) return null;
+
+    if (!handle) {
+        console.log('[Cherry Storage] ❌ no hay handle, no se puede leer');
+        return null;
+    }
 
     try {
         const file = await handle.getFile();
         const text = await file.text();
-        if (!text) return null;
+
+        console.log('[Cherry Storage] contenido crudo leído del archivo:', text);
+
+        if (!text) {
+            console.log('[Cherry Storage] ❌ archivo vacío');
+            return null;
+        }
 
         const parsed = JSON.parse(text);
+        console.log('[Cherry Storage] JSON parseado:', parsed);
+
         return Array.isArray(parsed) ? parsed : null;
 
     } catch (error) {
-        console.warn('Cherry: no se pudo leer el archivo de layout', error);
+        console.error('[Cherry Storage] ❌ error al leer/parsear:', error);
         return null;
     }
 }
@@ -133,20 +206,39 @@ export async function readLayoutFile() {
 
 export async function writeLayoutFile(layoutState) {
 
+    console.log('[Cherry Storage] writeLayoutFile → iniciando...');
+
     const handle = await getStoredHandle();
-    if (!handle) return false;
+    console.log('[Cherry Storage] handle obtenido:', handle);
+
+    if (!handle) {
+        console.log('[Cherry Storage] ❌ No hay handle guardado. ¿Vinculaste el archivo?');
+        return false;
+    }
 
     try {
-        const ok = await verifyPermission(handle, 'readwrite');
-        if (!ok) return false;
+        const alreadyGranted = await checkPermissionSilently(handle, 'readwrite');
+        console.log('[Cherry Storage] permiso ya concedido (silencioso):', alreadyGranted);
+
+        const ok = alreadyGranted || await requestPermission(handle, 'readwrite');
+        console.log('[Cherry Storage] permiso final:', ok);
+
+        if (!ok) {
+            console.log('[Cherry Storage] ❌ Permiso denegado, no se puede escribir.');
+            return false;
+        }
 
         const writable = await handle.createWritable();
+        console.log('[Cherry Storage] writable creado, escribiendo', layoutState.length, 'widgets...');
+
         await writable.write(JSON.stringify(layoutState, null, 2));
         await writable.close();
+
+        console.log('[Cherry Storage] ✅ Escritura completada con éxito.');
         return true;
 
     } catch (error) {
-        console.warn('Cherry: no se pudo escribir el archivo de layout', error);
+        console.error('[Cherry Storage] ❌ Error al escribir:', error);
         return false;
     }
 }
