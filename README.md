@@ -15,42 +15,126 @@ Cherry Web Screen es un panel visual tipo dashboard personalizable, construido c
 
 ```text
 cherry-web-screen/
-├── index.html
-├── README.md
-├── assets/
-│   └── media/
-├── src/
-│   ├── app/
-│   │   └── main.js
-│   ├── core/
-│   │   ├── canvas/
-│   │   ├── layouts/
-│   │   ├── state/
-│   │   ├── storage/
-│   │   └── widgets/
-│   ├── editor/
-│   │   ├── managers/
-│   │   ├── styles/
-│   │   ├── ui/
-│   │   ├── Editor.js
-│   │   ├── EditorState.js
-│   │   ├── CanvasAdapter.js
-│   │   └── index.js
-│   ├── styles/
-│   │   ├── base/
-│   │   ├── layout/
-│   │   ├── widget/
-│   │   ├── widgets/
-│   │   └── main.css
-│   └── widgets/
-│       ├── clock/
-│       ├── controls/
-│       ├── media/
-│       ├── system/
-│       ├── text/
-│       ├── visual/
-│       └── ...
-└── SUMMARY.md
+|   ARCHITECTURE.md
+|   DEVELOPMENT_GUIDE.md
+|   EDITOR_GUIDE.md
+|   index.html
+|   README.md
+|   SUMMARY.md
+|
++---assets
+|   \---media
+|           cherry.jpg
+|           portada.png
+|           portada2.jpg
+|
++---src
+|   +---app
+|   |       main.js
+|   |
+|   +---backend
+|   +---core
+|   |   +---canvas
+|   |   |       canvas.js
+|   |   |
+|   |   +---interaction
+|   |   |       ContextPopover.js
+|   |   |       ExpandablePanel.js
+|   |   |       ExpansionManager.js
+|   |   |       LongPressManager.js
+|   |   |       OverlayManager.js
+|   |   |
+|   |   +---layouts
+|   |   |       grid.js
+|   |   |
+|   |   +---state
+|   |   |       appState.js
+|   |   |       state.js
+|   |   |       statemanager.js
+|   |   |       store.js
+|   |   |
+|   |   +---storage
+|   |   |       layoutFileStorage.js
+|   |   |
+|   |   \---widgets
+|   |           widget.js
+|   |
+|   +---editor
+|   |   |   CanvasAdapter.js
+|   |   |   Editor.js
+|   |   |   EditorState.js
+|   |   |   index.js
+|   |   |
+|   |   +---managers
+|   |   |       EditorHistory.js
+|   |   |       OverlayManager.js
+|   |   |       PreviewManager.js
+|   |   |       SelectionManager.js
+|   |   |       SnapManager.js
+|   |   |
+|   |   +---styles
+|   |   |       editor.css
+|   |   |
+|   |   \---ui
+|   |           EditorEntryButton.js
+|   |
+|   +---main
+|   +---services
+|   |       mediaservice.js
+|   |       systemservice.js
+|   |
+|   +---styles
+|   |   |   background.css
+|   |   |   main.css
+|   |   |   variables.css
+|   |   |
+|   |   +---base
+|   |   |       reset.css
+|   |   |
+|   |   +---layout
+|   |   |       canvas.css
+|   |   |       grid.css
+|   |   |
+|   |   +---widget
+|   |   |       toggle.css
+|   |   |
+|   |   \---widgets
+|   |           clock.css
+|   |           controls.css
+|   |           media.css
+|   |           slider.css
+|   |           system.css
+|   |           text.css
+|   |           visual.css
+|   |           widget.css
+|   |
+|   +---ui
+|   |   +---editor
+|   |   +---settings
+|   |   \---toolbar
+|   \---widgets
+|       +---clock
+|       |       clockwidget.js
+|       |
+|       +---controls
+|       |       controlswidget.js
+|       |       sliderwidget.js
+|       |       togglewidget.js
+|       |
+|       +---media
+|       |       mediawidget.js
+|       |
+|       +---system
+|       |       systemwidget.js
+|       |
+|       +---text
+|       |       textwidget.js
+|       |
+|       \---visual
+|               mediavisualwidget.js
+|
+\---tests
+        longpress.test.mjs
 ```
 
 ## 🚀 Cómo arrancarlo

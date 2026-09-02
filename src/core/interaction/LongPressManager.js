@@ -10,6 +10,7 @@ export class LongPressManager {
         this.registry = new Map();
         this.activePress = null;
         this.suppressClickTarget = null;
+        this.suppressNextClick = false;
 
         this.overlayManager = new OverlayManager(this.root);
         this.contextPopover = new ContextPopover({

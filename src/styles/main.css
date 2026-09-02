@@ -23,6 +23,7 @@
 @import "./widgets/text.css";
 @import "./widget/toggle.css";
 @import "./widgets/slider.css";
+@import "./widgets/expansion.css";
 
 * {
     box-sizing: border-box;

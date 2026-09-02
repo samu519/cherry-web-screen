@@ -1,227 +1,544 @@
-/**
- * =========================================================
- * CHERRY — EXPANSION MANAGER
- * 
- * Orchestrates the expansion of interactive controls
- * (e.g., Wi-Fi, Bluetooth, Volume).
- * 
- * - Manages expansion lifecycle
- * - Coordinates overlays and animations
- * - Delegates content to expansion handlers
- * - Handles positioning and bounds checking
- * ========================================================= */
-
-import { OverlayManager } from './OverlayManager.js';
-import { ExpandablePanel } from './ExpandablePanel.js';
+import { OverlayManager } from "./OverlayManager.js";
+import { ExpandablePanel } from "./ExpandablePanel.js";
 
 export class ExpansionManager {
+
     constructor({
         root = document.body,
         threshold = 500,
         animationDuration = 250
     } = {}) {
+
         this.root = root || document.body;
+
         this.threshold = threshold;
         this.animationDuration = animationDuration;
 
-        // Active state
         this.isExpanded = false;
         this.expandedControlId = null;
         this.expandedElement = null;
+
         this.activePanel = null;
         this.activeOverlay = null;
 
-        // Handlers registry
         this.handlers = new Map();
 
-        // Managers
-        this.overlayManager = new OverlayManager(this.root);
-        this.panel = new ExpandablePanel({
-            root: this.root,
-            overlayManager: this.overlayManager,
-            animationDuration: this.animationDuration
-        });
+        this.overlayManager =
+            new OverlayManager(this.root);
 
-        // Timers
+        this.panel =
+            new ExpandablePanel({
+                root: this.root,
+                overlayManager: this.overlayManager,
+                animationDuration: this.animationDuration
+            });
+
         this.pressTimer = null;
         this.activePress = null;
 
-        // Event handling
-        this._handleDocumentClick = this._handleDocumentClick.bind(this);
-        this._handlePointerMove = this._handlePointerMove.bind(this);
-        this._handlePointerUp = this._handlePointerUp.bind(this);
+        /*
+         * Elemento cuyo siguiente click debe ignorarse
+         * porque acaba de producir un long press.
+         */
+        this.suppressClickTarget = null;
 
-        if (typeof document !== 'undefined') {
-            document.addEventListener('click', this._handleDocumentClick);
-        }
+        this._handleDocumentClick =
+            this._handleDocumentClick.bind(this);
+
+        document.addEventListener(
+            "click",
+            this._handleDocumentClick,
+            true
+        );
     }
 
-    /**
-     * Register a control that can be expanded
-     * @param {HTMLElement} element - The control element
-     * @param {Object} config - Configuration object
-     * @param {string} config.id - Control ID (e.g., "wifi")
-     * @param {string} config.label - Display label
-     * @param {Function} config.getContent - Function that returns expansion content
-     * @param {Function} config.onAction - Handler for expansion actions
-     * @param {number} config.threshold - Optional custom threshold
-     */
+
+    // =========================================================
+    // REGISTER
+    // =========================================================
+
     register(element, config = {}) {
-        if (!element || !config.id) {
-            console.warn('ExpansionManager: element and config.id are required');
+        console.log(
+        "[ExpansionManager] Registrando:",
+        config.id,
+        element
+    );
+
+        if (!element) {
             return null;
         }
 
         const payload = {
             element,
-            id: config.id,
-            label: config.label || config.id,
-            getContent: config.getContent || (() => ({})),
-            onAction: config.onAction || null,
-            threshold: config.threshold || this.threshold
+            id: config.id ?? element.dataset.control,
+            label: config.label ?? "",
+            getContent:
+                typeof config.getContent === "function"
+                    ? config.getContent
+                    : () => null,
+            onAction:
+                typeof config.onAction === "function"
+                    ? config.onAction
+                    : null,
+            threshold:
+                config.threshold ?? this.threshold
         };
 
-        this.handlers.set(element, payload);
+        /*
+         * Si este elemento ya estaba registrado,
+         * quitamos sus listeners anteriores.
+         */
+        this.unregister(element);
 
-        // Add event listeners for expansion detection
-        const handlePointerDown = (event) => {
-            if (event.button !== undefined && event.button !== 0) {
+        this.handlers.set(
+            payload.id,
+            payload
+        );
+
+        const pointerDown = event => {
+
+            console.log(
+        "[ExpansionManager] Registrando:",
+        config.id,
+        element
+    );
+            if (
+                event.button !== undefined &&
+                event.button !== 0
+            ) {
                 return;
             }
-            this._startPress(element, payload, event);
+
+            this._startPress(
+                element,
+                payload,
+                event
+            );
         };
 
-        const handlePointerMove = (event) => {
-            if (!this.activePress || this.activePress.element !== element) {
+        const pointerMove = event => {
+
+            const press = this.activePress;
+
+            if (!press) {
                 return;
             }
 
-            const dx = Math.abs(event.clientX - this.activePress.startX);
-            const dy = Math.abs(event.clientY - this.activePress.startY);
+            if (press.element !== element) {
+                return;
+            }
 
-            // Cancel if moved too much
-            if (dx > 12 || dy > 12) {
+            const deltaX =
+                event.clientX - press.startX;
+
+            const deltaY =
+                event.clientY - press.startY;
+
+            const distance =
+                Math.sqrt(
+                    deltaX * deltaX +
+                    deltaY * deltaY
+                );
+
+            /*
+             * Si el usuario mueve demasiado el dedo/mouse,
+             * dejamos de considerar esto un long press.
+             */
+            if (distance > 12) {
                 this._cancelPress();
             }
         };
 
-        const handlePointerUp = () => {
-            if (this.activePress && this.activePress.element === element) {
-                this._cancelPress();
-            }
+        const pointerUp = () => {
+
+            this._finishPress(element);
         };
 
-        if (!element.__cherryExpansionHandlers) {
-            element.__cherryExpansionHandlers = new Map();
-        }
+        const pointerCancel = () => {
 
-        element.__cherryExpansionHandlers.set('pointerdown', handlePointerDown);
-        element.__cherryExpansionHandlers.set('pointermove', handlePointerMove);
-        element.__cherryExpansionHandlers.set('pointerup', handlePointerUp);
-        element.__cherryExpansionHandlers.set('pointercancel', handlePointerUp);
+            this._cancelPress();
+        };
 
-        element.addEventListener('pointerdown', handlePointerDown);
-        element.addEventListener('pointermove', handlePointerMove);
-        element.addEventListener('pointerup', handlePointerUp);
-        element.addEventListener('pointercancel', handlePointerUp);
+        element.addEventListener(
+            "pointerdown",
+            pointerDown
+        );
 
-        return element;
+        element.addEventListener(
+            "pointermove",
+            pointerMove
+        );
+
+        element.addEventListener(
+            "pointerup",
+            pointerUp
+        );
+
+        element.addEventListener(
+            "pointercancel",
+            pointerCancel
+        );
+
+        element.__cherryExpansionHandlers = {
+            pointerDown,
+            pointerMove,
+            pointerUp,
+            pointerCancel
+        };
+
+        return payload;
     }
 
-    /**
-     * Unregister a control
-     */
+
+    // =========================================================
+    // UNREGISTER
+    // =========================================================
+
     unregister(element) {
-        const handlers = element?.__cherryExpansionHandlers;
+
+        if (!element) {
+            return;
+        }
+
+        const handlers =
+            element.__cherryExpansionHandlers;
+
         if (!handlers) {
             return;
         }
 
-        handlers.forEach((handler, type) => {
-            element.removeEventListener(type, handler);
-        });
+        element.removeEventListener(
+            "pointerdown",
+            handlers.pointerDown
+        );
 
-        element.__cherryExpansionHandlers = null;
-        this.handlers.delete(element);
+        element.removeEventListener(
+            "pointermove",
+            handlers.pointerMove
+        );
+
+        element.removeEventListener(
+            "pointerup",
+            handlers.pointerUp
+        );
+
+        element.removeEventListener(
+            "pointercancel",
+            handlers.pointerCancel
+        );
+
+        delete element.__cherryExpansionHandlers;
     }
 
-    /**
-     * Start press detection
-     */
+
+    // =========================================================
+    // START PRESS
+    // =========================================================
+
     _startPress(element, payload, event) {
-        this._cancelPress();
 
-        this.activePress = {
-            element,
-            payload,
-            startX: event.clientX,
-            startY: event.clientY,
-            startTime: Date.now()
-        };
+    console.log(
+        "[ExpansionManager] Iniciando press:",
+        payload.id
+    );
 
-        // Set timer for expansion
-        this.pressTimer = setTimeout(() => {
-            this._expand(element, payload);
-        }, payload.threshold);
+    this._cancelPress();
+
+    this.activePress = {
+        element,
+        payload,
+        startX: event.clientX,
+        startY: event.clientY,
+        startedAt: Date.now(),
+        triggered: false
+    };
+
+    this.pressTimer = setTimeout(() => {
+
+        console.log(
+            "[ExpansionManager] LONG PRESS DETECTADO:",
+            payload.id
+        );
+
+        if (!this.activePress) {
+            console.log(
+                "[ExpansionManager] No hay activePress"
+            );
+            return;
+        }
+
+        if (
+            this.activePress.element !== element
+        ) {
+            console.log(
+                "[ExpansionManager] El elemento cambió"
+            );
+            return;
+        }
+
+        this.activePress.triggered = true;
+
+        
+        this.suppressNextClick = true;
+
+        console.log(
+            "[ExpansionManager] LONG PRESS CONFIRMADO:",
+            payload.id
+        );
+
+        this._expand(payload);
+
+    }, payload.threshold);
+}
+
+
+    // =========================================================
+    // FINISH PRESS
+    // =========================================================
+
+    _finishPress(element) {
+
+    if (!this.activePress) {
+        return;
     }
 
-    /**
-     * Cancel current press
+    if (
+        this.activePress.element !== element
+    ) {
+        return;
+    }
+
+    const wasTriggered =
+        this.activePress.triggered;
+
+    this._clearPressTimer();
+
+    /*
+     * Si el long press ya ocurrió,
+     * mantenemos la protección contra el click
+     * que pueda llegar inmediatamente después.
      */
+    if (wasTriggered) {
+
+        console.log(
+            "[ExpansionManager] Long press terminado:",
+            this.activePress.payload.id
+        );
+
+        this.activePress = null;
+
+        return;
+    }
+
+    /*
+     * Fue solamente un tap.
+     */
+    console.log(
+        "[ExpansionManager] Press cancelado antes del threshold"
+    );
+
+    this.activePress = null;
+}
+
+
+    // =========================================================
+    // CANCEL PRESS
+    // =========================================================
+
     _cancelPress() {
-        if (this.pressTimer) {
-            clearTimeout(this.pressTimer);
-            this.pressTimer = null;
-        }
+
+        this._clearPressTimer();
+
         this.activePress = null;
     }
 
-    /**
-     * Expand the control
-     */
-    _expand(element, payload) {
-        if (this.isExpanded && this.expandedControlId === payload.id) {
-            return; // Already expanded
+
+    // =========================================================
+    // CLEAR TIMER
+    // =========================================================
+
+    _clearPressTimer() {
+
+        if (this.pressTimer) {
+
+            clearTimeout(
+                this.pressTimer
+            );
+
+            this.pressTimer = null;
+        }
+    }
+
+
+    // =========================================================
+    // EXPAND
+    // =========================================================
+
+    _expand(payload) {
+
+        if (!payload) {
+            return;
         }
 
-        // Close previous expansion
+        if (
+            this.isExpanded &&
+            this.expandedControlId === payload.id
+        ) {
+            return;
+        }
+
+        /*
+         * Si otro control estaba expandido,
+         * lo cerramos primero.
+         */
         if (this.isExpanded) {
             this.collapse();
         }
 
         this.isExpanded = true;
         this.expandedControlId = payload.id;
-        this.expandedElement = element;
+        this.expandedElement = payload.element;
 
-        // Get expansion content
-        const content = payload.getContent({
-            controlId: payload.id,
-            controlLabel: payload.label
-        });
+        let content = null;
 
-        // Open the expandable panel
+        try {
+
+            content =
+                payload.getContent({
+                    controlId: payload.id,
+                    controlLabel: payload.label
+                });
+
+        } catch (error) {
+
+            console.error(
+                "Cherry ExpansionManager: error creando contenido:",
+                error
+            );
+
+            content = {
+                title: payload.label,
+                items: []
+            };
+        }
+
         this.panel.open({
+
             id: payload.id,
+
             label: payload.label,
-            content: content,
-            element: element,
+
+            content,
+
+            element: payload.element,
+
             container: this.root,
+
             onAction: payload.onAction,
+
             onClose: () => {
-                this.collapse();
+
+                this.isExpanded = false;
+                this.expandedControlId = null;
+                this.expandedElement = null;
             }
         });
 
-        // Suppress regular click
-        if (this.activePress) {
-            this.activePress.suppressClick = true;
+        this.activePanel = this.panel;
+
+    }
+
+
+    // =========================================================
+    // DOCUMENT CLICK
+    // =========================================================
+
+    _handleDocumentClick(event) {
+
+        console.log(
+            "[ExpansionManager] CLICK DOCUMENT:",
+            event.target
+        );
+
+
+        // =========================================================
+        // 1. CONSUMIR CLICK POST-LONG-PRESS
+        // =========================================================
+
+        if (this.suppressNextClick) {
+
+            console.log(
+                "[ExpansionManager] Click consumido después de long press"
+            );
+
+            this.suppressNextClick = false;
+
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+
+            return;
+        }
+
+
+        // =========================================================
+        // 2. SI NO HAY EXPANSIÓN, NO HACER NADA
+        // =========================================================
+
+        if (!this.isExpanded) {
+            return;
+        }
+
+
+        // =========================================================
+        // 3. DETECTAR CLICK DENTRO DEL PANEL
+        // =========================================================
+
+        const panelElement =
+            this.panel?.panelElement;
+
+        const expandedElement =
+            this.expandedElement;
+
+        const clickedInsidePanel =
+            panelElement &&
+            (
+                event.target === panelElement ||
+                panelElement.contains(event.target)
+            );
+
+        const clickedExpandedControl =
+            expandedElement &&
+            (
+                event.target === expandedElement ||
+                expandedElement.contains(event.target)
+            );
+
+
+        // =========================================================
+        // 4. CLICK FUERA → CERRAR
+        // =========================================================
+
+        if (
+            !clickedInsidePanel &&
+            !clickedExpandedControl
+        ) {
+
+            console.log(
+                "[ExpansionManager] Click fuera → collapse"
+            );
+
+            this.collapse();
         }
     }
 
-    /**
-     * Collapse the expanded control
-     */
+
+    // =========================================================
+    // COLLAPSE
+    // =========================================================
+
     collapse() {
+
         if (!this.isExpanded) {
             return;
         }
@@ -230,66 +547,94 @@ export class ExpansionManager {
         this.expandedControlId = null;
         this.expandedElement = null;
 
+        this.suppressNextClick = false;
+
         this.panel.close();
+
+        this.activePanel = null;
+        this.activeOverlay = null;
     }
 
-    /**
-     * Toggle expansion
-     */
-    toggle(element, payload) {
-        if (this.isExpanded && this.expandedControlId === payload.id) {
+
+    // =========================================================
+    // TOGGLE
+    // =========================================================
+
+    toggle(elementOrId) {
+
+        let id = null;
+
+        if (typeof elementOrId === "string") {
+            id = elementOrId;
+        } else if (elementOrId) {
+            id =
+                elementOrId.dataset.control;
+        }
+
+        if (!id) {
+            return;
+        }
+
+        if (
+            this.isExpanded &&
+            this.expandedControlId === id
+        ) {
             this.collapse();
-        } else {
-            this._expand(element, payload);
+            return;
         }
+
+        const payload =
+            this.handlers.get(id);
+
+        if (!payload) {
+            return;
+        }
+
+        this._expand(payload);
     }
 
-    /**
-     * Handle document click for closing
-     */
-    _handleDocumentClick(event) {
-        if (!this.isExpanded) {
-            return;
-        }
 
-        const panel = this.panel.panelElement;
-        const element = this.expandedElement;
+    // =========================================================
+    // IS CONTROL EXPANDED
+    // =========================================================
 
-        // Check if click is on panel or expanded element
-        if (panel && (panel === event.target || panel.contains(event.target))) {
-            return;
-        }
-
-        if (element && (element === event.target || element.contains(event.target))) {
-            return;
-        }
-
-        // Click outside, close expansion
-        this.collapse();
-    }
-
-    /**
-     * Check if a control is expanded
-     */
     isControlExpanded(controlId) {
-        return this.isExpanded && this.expandedControlId === controlId;
+
+        return (
+            this.isExpanded &&
+            this.expandedControlId === controlId
+        );
     }
 
-    /**
-     * Destroy manager and clean up
-     */
-    destroy() {
-        if (typeof document !== 'undefined') {
-            document.removeEventListener('click', this._handleDocumentClick);
-        }
 
-        this.handlers.forEach((_, element) => {
-            this.unregister(element);
-        });
+    // =========================================================
+    // DESTROY
+    // =========================================================
+
+    destroy() {
+
+        this._cancelPress();
+
+        document.removeEventListener(
+            "click",
+            this._handleDocumentClick,
+            true
+        );
+
+        this.handlers.forEach(
+            payload => {
+                this.unregister(
+                    payload.element
+                );
+            }
+        );
+
+        this.handlers.clear();
 
         this.collapse();
-        this.overlayManager = null;
-        this.panel = null;
-        this.handlers.clear();
+
+        if (this.overlayManager) {
+            this.overlayManager.close();
+        }
     }
 }

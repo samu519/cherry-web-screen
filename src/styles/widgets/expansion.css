@@ -1,0 +1,261 @@
+.cherry-overlay--expansion {
+    position: fixed !important;
+    inset: 0 !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+    box-sizing: border-box;
+
+    z-index: 1000;
+}
+
+
+/* =========================================================
+   EXPANSION PANEL
+   ========================================================= */
+
+.cherry-expansion-panel {
+    position: relative;
+
+    width: min(420px, calc(100vw - 48px));
+    max-height: calc(100vh - 48px);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border-radius: 28px;
+
+    background:
+        rgba(28, 28, 30, 0.82);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.10);
+
+    box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.45);
+
+    backdrop-filter:
+        blur(24px);
+
+    -webkit-backdrop-filter:
+        blur(24px);
+
+    color: white;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.cherry-expansion-panel__header {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    min-height: 64px;
+
+    padding:
+        16px 18px 16px 22px;
+
+    box-sizing: border-box;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+.cherry-expansion-panel__title {
+
+    margin: 0;
+
+    font-size: 20px;
+    font-weight: 600;
+
+    letter-spacing: -0.02em;
+}
+
+
+/* =========================================================
+   CLOSE
+   ========================================================= */
+
+.cherry-expansion-panel__close {
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.08);
+
+    color:
+        rgba(255, 255, 255, 0.75);
+
+    cursor: pointer;
+
+    transition:
+        background 150ms ease,
+        color 150ms ease,
+        transform 150ms ease;
+}
+
+
+.cherry-expansion-panel__close:hover {
+
+    background:
+        rgba(255, 255, 255, 0.14);
+
+    color: white;
+}
+
+
+.cherry-expansion-panel__close:active {
+
+    transform: scale(0.92);
+}
+
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.cherry-expansion-panel__content {
+
+    padding: 18px;
+
+    overflow-y: auto;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   ITEMS
+   ========================================================= */
+
+.cherry-expansion-panel__item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    width: 100%;
+
+    padding: 14px;
+
+    margin-bottom: 8px;
+
+    border-radius: 16px;
+
+    background:
+        rgba(255, 255, 255, 0.055);
+
+    border:
+        1px solid transparent;
+
+    box-sizing: border-box;
+
+    transition:
+        background 150ms ease,
+        border-color 150ms ease;
+}
+
+
+.cherry-expansion-panel__item:hover {
+
+    background:
+        rgba(255, 255, 255, 0.09);
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.cherry-expansion-panel__actions {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+    margin-top: 12px;
+
+    padding-top: 14px;
+
+    border-top:
+        1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+.cherry-expansion-panel__action {
+
+    width: 100%;
+
+    min-height: 46px;
+
+    padding: 0 14px;
+
+    border: 0;
+    border-radius: 14px;
+
+    background:
+        rgba(255, 255, 255, 0.07);
+
+    color: white;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background 150ms ease,
+        transform 150ms ease;
+}
+
+
+.cherry-expansion-panel__action:hover {
+
+    background:
+        rgba(255, 255, 255, 0.12);
+}
+
+
+.cherry-expansion-panel__action:active {
+
+    transform: scale(0.98);
+}
+
+.cherry-expansion-panel[data-expansion-variant="compact"] {
+    width: min(340px, calc(100vw - 48px));
+    border-radius: 24px;
+}
+
+
+.cherry-expansion-panel[data-expansion-variant="large"] {
+    width: min(620px, calc(100vw - 48px));
+    border-radius: 32px;
+}
+
+
+.cherry-expansion-panel[data-expansion-variant="wide"] {
+    width: min(760px, calc(100vw - 48px));
+}

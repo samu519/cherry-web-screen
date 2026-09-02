@@ -1,4 +1,5 @@
 import { Widget } from "../../core/widgets/Widget.js";
+import { ExpansionManager } from "../../core/interaction/ExpansionManager.js";
 
 export class ControlsWidget extends Widget {
 
@@ -8,6 +9,8 @@ export class ControlsWidget extends Widget {
             ...config,
             type: "controls"
         });
+
+        this.expansionManager = null;
 
 
         // =====================================================
@@ -36,192 +39,51 @@ export class ControlsWidget extends Widget {
         this.state = {
 
             controls: [
-
-                // =================================================
-                // TOGGLES
-                // =================================================
-
                 {
                     type: "toggle",
                     id: "wifi",
                     label: "Wi-Fi",
                     value: true,
                     visible: true,
-                    span: 1
+                    span: 1,
+                    expandable: true
                 },
-
                 {
                     type: "toggle",
                     id: "bluetooth",
                     label: "Bluetooth",
                     value: true,
                     visible: true,
-                    span: 1
+                    span: 1,
+                    expandable: true
                 },
-
                 {
                     type: "toggle",
                     id: "darkMode",
                     label: "Dark Mode",
                     value: false,
                     visible: true,
-                    span: 1
+                    span: 1,
+                    expandable: true
                 },
-
                 {
                     type: "toggle",
                     id: "colorMode",
                     label: "Color Mode",
                     value: true,
                     visible: true,
-                    span: 1
+                    span: 1,
+                    expandable: true
                 },
-
                 {
                     type: "toggle",
                     id: "doNotDisturb",
                     label: "Do Not Disturb",
                     value: false,
                     visible: true,
-                    span: 1
+                    span: 1,
+                    expandable: true
                 },
-                {
-                    type: "toggle",
-                    id: "wifi",
-                    label: "Wi-Fi",
-                    value: true,
-                    visible: true,
-                    span: 1
-                },
-
-                {
-                    type: "toggle",
-                    id: "bluetooth",
-                    label: "Bluetooth",
-                    value: true,
-                    visible: true,
-                    span: 1
-                },
-
-                {
-                    type: "toggle",
-                    id: "darkMode",
-                    label: "Dark Mode",
-                    value: false,
-                    visible: true,
-                    span: 1
-                },
-
-                {
-                    type: "toggle",
-                    id: "colorMode",
-                    label: "Color Mode",
-                    value: true,
-                    visible: true,
-                    span: 1
-                },
-
-                {
-                    type: "toggle",
-                    id: "doNotDisturb",
-                    label: "Do Not Disturb",
-                    value: false,
-                    visible: true,
-                    span: 1
-                },
-                {
-                    type: "toggle",
-                    id: "wifi",
-                    label: "Wi-Fi",
-                    value: true,
-                    visible: true,
-                    span: 1
-                },
-
-                {
-                    type: "toggle",
-                    id: "bluetooth",
-                    label: "Bluetooth",
-                    value: true,
-                    visible: true,
-                    span: 1
-                },
-
-                {
-                    type: "toggle",
-                    id: "darkMode",
-                    label: "Dark Mode",
-                    value: false,
-                    visible: true,
-                    span: 1
-                },
-
-                {
-                    type: "toggle",
-                    id: "colorMode",
-                    label: "Color Mode",
-                    value: true,
-                    visible: true,
-                    span: 1
-                },
-
-                {
-                    type: "toggle",
-                    id: "doNotDisturb",
-                    label: "Do Not Disturb",
-                    value: false,
-                    visible: true,
-                    span: 1
-                },
-                {
-                    type: "toggle",
-                    id: "wifi",
-                    label: "Wi-Fi",
-                    value: true,
-                    visible: true,
-                    span: 1
-                },
-
-                {
-                    type: "toggle",
-                    id: "bluetooth",
-                    label: "Bluetooth",
-                    value: true,
-                    visible: true,
-                    span: 1
-                },
-
-                {
-                    type: "toggle",
-                    id: "darkMode",
-                    label: "Dark Mode",
-                    value: false,
-                    visible: true,
-                    span: 1
-                },
-
-                {
-                    type: "toggle",
-                    id: "colorMode",
-                    label: "Color Mode",
-                    value: true,
-                    visible: true,
-                    span: 1
-                },
-
-                {
-                    type: "toggle",
-                    id: "doNotDisturb",
-                    label: "Do Not Disturb",
-                    value: false,
-                    visible: true,
-                    span: 1
-                },
-                
-
-                // =================================================
-                // SLIDERS
-                // =================================================
 
                 {
                     type: "slider",
@@ -233,7 +95,6 @@ export class ControlsWidget extends Widget {
                     visible: true,
                     span: 2
                 },
-
                 {
                     type: "slider",
                     id: "volume",
@@ -244,7 +105,6 @@ export class ControlsWidget extends Widget {
                     visible: true,
                     span: 2
                 },
-
                 {
                     type: "slider",
                     id: "microphone",
@@ -255,7 +115,6 @@ export class ControlsWidget extends Widget {
                     visible: true,
                     span: 2
                 }
-
             ],
 
             ...this.state
@@ -405,8 +264,14 @@ export class ControlsWidget extends Widget {
             "cherry-controls"
         );
 
-        return element;
+        this.expansionManager =
+            new ExpansionManager({
+                root: element,
+                threshold: 500,
+                animationDuration: 250
+            });
 
+        return element;
     }
 
 
@@ -677,15 +542,25 @@ export class ControlsWidget extends Widget {
 
 render() {
 
-    // =====================================================
-    // CREATE ELEMENT
-    // =====================================================
+    if (this.expansionManager) {
+
+        this.expansionManager.destroy();
+
+        this.expansionManager = null;
+    }
 
     if (!this.element) {
 
         this.createElement();
-
     }
+
+    this.expansionManager =
+        new ExpansionManager({
+            root: document.body,
+            threshold: 500,
+            animationDuration: 250
+        });
+
 
 
     // =====================================================
@@ -911,6 +786,175 @@ render() {
 
 }
 
+getExpansionConfig(control) {
+
+    if (!control?.expandable) {
+        return null;
+    }
+
+    const configs = {
+
+        wifi: {
+            title: "Wi-Fi",
+
+            getContent: () => ({
+                title: "Wi-Fi",
+
+                items: [
+                    {
+                        label: "Red actual",
+                        secondary: "Conectado",
+                        selected: true
+                    },
+                    {
+                        label: "Red disponible",
+                        secondary: "Disponible"
+                    },
+                    {
+                        label: "Otra red",
+                        secondary: "Disponible"
+                    }
+                ],
+
+                actions: [
+                    {
+                        label: "More Settings",
+                        callback: () => {
+                            console.log(
+                                "Wi-Fi More Settings"
+                            );
+                        }
+                    }
+                ]
+            })
+        },
+
+
+        bluetooth: {
+            title: "Bluetooth",
+
+            getContent: () => ({
+                title: "Bluetooth",
+
+                items: [
+                    {
+                        label: "Auriculares",
+                        secondary: "Conectado",
+                        selected: true
+                    },
+                    {
+                        label: "Mouse",
+                        secondary: "Disponible"
+                    },
+                    {
+                        label: "Teclado",
+                        secondary: "Disponible"
+                    }
+                ],
+
+                actions: [
+                    {
+                        label: "More Settings",
+                        callback: () => {
+                            console.log(
+                                "Bluetooth More Settings"
+                            );
+                        }
+                    }
+                ]
+            })
+        },
+
+
+        darkMode: {
+            title: "Dark Mode",
+
+            getContent: () => {
+
+                const current =
+                    this.getControlValue("darkMode");
+
+                return {
+                    title: "Dark Mode",
+
+                    items: [
+                        {
+                            label: "Dark Mode",
+
+                            secondary:
+                                current
+                                    ? "Activado"
+                                    : "Desactivado",
+
+                            selected: current
+                        }
+                    ]
+                };
+            }
+        },
+
+
+        colorMode: {
+            title: "Color Mode",
+
+            getContent: () => {
+
+                const current =
+                    this.getControlValue("colorMode");
+
+                return {
+                    title: "Color Mode",
+
+                    items: [
+                        {
+                            label: "Color Mode",
+
+                            secondary:
+                                current
+                                    ? "Activado"
+                                    : "Desactivado",
+
+                            selected: current
+                        }
+                    ]
+                };
+            }
+        },
+
+
+        doNotDisturb: {
+            title: "Do Not Disturb",
+
+            getContent: () => {
+
+                const current =
+                    this.getControlValue(
+                        "doNotDisturb"
+                    );
+
+                return {
+                    title: "Do Not Disturb",
+
+                    items: [
+                        {
+                            label: "Do Not Disturb",
+
+                            secondary:
+                                current
+                                    ? "Activado"
+                                    : "Desactivado",
+
+                            selected: current
+                        }
+                    ]
+                };
+            }
+        }
+    };
+
+    return configs[control.id] ?? null;
+}
+
     // =========================================================
     // CREATE CONTROL
     // =========================================================
@@ -1066,6 +1110,41 @@ render() {
 
             }
         );
+
+
+        const expansionConfig =
+            this.getExpansionConfig(control);
+
+        console.log(
+            "EXPANSION CHECK:",
+            control.id,
+            control.expandable,
+            expansionConfig
+        );
+
+        if (
+            expansionConfig &&
+            this.expansionManager
+        ) {
+            console.log(
+                "REGISTRANDO LONG PRESS:",
+                control.id
+            );
+
+            this.expansionManager.register(
+                element,
+                {
+                    id: control.id,
+                    label:
+                        expansionConfig.title ??
+                        control.label,
+                    getContent:
+                        expansionConfig.getContent
+                }
+            );
+        }
+
+        
 
 
         return element;
