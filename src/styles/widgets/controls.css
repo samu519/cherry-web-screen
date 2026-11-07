@@ -487,18 +487,23 @@
 
 
 /* =========================================================
-   BUTTON MODE — ACTIVE
+   CONTROLS — ACTIVE STATE
    ========================================================= */
 
-.cherry-controls[data-style="buttons"]
 .cherry-control-toggle.active {
 
     background:
         var(--cherry-accent-medium);
 
+    border-color:
+        var(--cherry-accent-border);
+
+    color:
+        var(--cherry-white, #850000);
+
     box-shadow:
 
-        0 8px 24px
+        0 10px 28px
         var(--cherry-accent-shadow),
 
         inset 0 1px 0
@@ -508,6 +513,48 @@
             255,
             0.12
         );
+
+}
+
+.cherry-control-toggle.active:hover {
+
+    background:
+        var(--cherry-accent-glow, color-mix(in srgb, var(--cherry-accent) 40%, transparent));
+
+    border-color:
+        var(--cherry-accent-border);
+
+    box-shadow:
+
+        0 12px 30px
+        var(--cherry-accent-shadow),
+
+        inset 0 1px 0
+        rgba(
+            255,
+            255,
+            255,
+            0.16
+        );
+
+}
+
+.cherry-control-toggle.active .cherry-control-icon {
+
+    color:
+        var(--cherry-white, #ffffff);
+
+
+}
+
+.cherry-controls[data-style="compact"] .cherry-control-toggle.active .cherry-control-icon{
+    background: #0000008c;
+    border-radius: 10px;
+}
+.cherry-control-toggle.active .cherry-control-label {
+
+    color:
+        var(--cherry-white, #ffffff);
 
 }
 /* =========================================================

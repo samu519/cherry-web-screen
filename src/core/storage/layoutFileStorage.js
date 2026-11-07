@@ -214,7 +214,11 @@ export async function writeLayoutFile(layoutState) {
         }
 
         const writable = await handle.createWritable();
-        console.log('[Cherry Storage] writable creado, escribiendo', layoutState.length, 'widgets...');
+        console.log(
+            '[Cherry Storage] writable creado, escribiendo',
+            layoutState?.widgets?.length ?? 0,
+            'widgets...'
+        );
 
         await writable.write(JSON.stringify(layoutState, null, 2));
         await writable.close();

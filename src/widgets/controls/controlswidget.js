@@ -1,5 +1,6 @@
 import { Widget } from "../../core/widgets/Widget.js";
 import { ExpansionManager } from "../../core/interaction/ExpansionManager.js";
+import { appState } from "../../core/state/appState.js";
 
 export class ControlsWidget extends Widget {
 
@@ -516,9 +517,14 @@ export class ControlsWidget extends Widget {
         const visible =
             this.getVisibleControls();
 
+        const visibleList = [
+            ...(visible.toggles || []),
+            ...(visible.sliders || [])
+        ];
+
         const visibleIds =
             new Set(
-                visible.controls.map(
+                visibleList.map(
                     control =>
                         control.id
                 )
@@ -784,11 +790,13 @@ render() {
         container
     );
 
+    this.connectState();
+
 }
 
 getExpansionConfig(control) {
 
-    if (!control?.expandable) {
+    if (!control || control.expandable === false) {
         return null;
     }
 
@@ -952,7 +960,12 @@ getExpansionConfig(control) {
         }
     };
 
-    return configs[control.id] ?? null;
+    const config = configs[control.id] ?? null;
+    if (config && control.expandable === undefined) {
+        control.expandable = true;
+    }
+
+    return config;
 }
 
     // =========================================================
@@ -1037,18 +1050,20 @@ getExpansionConfig(control) {
         element.dataset.control =
             control.id;
 
+        const val =
+            this.getControlValue(control.id);
 
-        // =====================================================
-        // STATE
-        // =====================================================
+        const isActive =
+            val !== undefined
+                ? Boolean(val)
+                : Boolean(control.value);
 
-        if (control.value) {
-
-            element.classList.add(
-                "active"
-            );
-
+        if (isActive) {
+            element.classList.add("active");
+            element.dataset.active = "true";
         }
+
+
 
 
         // =====================================================
@@ -1131,17 +1146,19 @@ getExpansionConfig(control) {
                 control.id
             );
 
-            this.expansionManager.register(
-                element,
-                {
-                    id: control.id,
-                    label:
-                        expansionConfig.title ??
-                        control.label,
-                    getContent:
-                        expansionConfig.getContent
+            this.expansionManager.register(element, {
+                id: control.id,
+                label: control.label,
+                getContent: expansionConfig.getContent,
+                onAction: (action, newValue) => {
+                    if (typeof expansionConfig.onAction === "function") {
+                        expansionConfig.onAction(action, newValue);
+                    } else if (newValue !== undefined) {
+                        appState.set(control.id, newValue, this.id);
+                    }
                 }
-            );
+            });
+
         }
 
         
@@ -1185,25 +1202,35 @@ getExpansionConfig(control) {
         // TOGGLE STATE
         // =====================================================
 
+        const current =
+            this.getControlValue(control.id);
+
+        const currentBool =
+            current !== undefined
+                ? Boolean(current)
+                : Boolean(control.value);
+
+        const newValue =
+            !currentBool;
+
         control.value =
-            !control.value;
+            newValue;
 
+        appState.set(
+            control.id,
+            newValue,
+            this.id
+        );
 
-        // =====================================================
-        // DEBUG
-        // =====================================================
+        this.updateControlState(
+            control.id,
+            newValue
+        );
 
         console.log(
             `Toggle ${control.id}:`,
-            control.value
+            newValue
         );
-
-
-        // =====================================================
-        // UPDATE UI
-        // =====================================================
-
-        this.render();
 
     }
 
@@ -1368,6 +1395,10 @@ getExpansionConfig(control) {
             }
         );
 
+        sliderInput.addEventListener("input", (e) => {
+            appState.set(control.id, Number(e.target.value), this.id);
+        });
+
 
         // =====================================================
         // STRUCTURE
@@ -1525,30 +1556,384 @@ getExpansionConfig(control) {
 
         button.addEventListener(
             "click",
-            () => {
-
-                this.openControlsPanel();
-
+            (e) => {
+                e.stopPropagation();
+                this.openControlsPanel(button);
             }
         );
-
 
         return button;
 
     }
     
 
+    // =========================================================
+    // GET CONTROL VALUE
+    // =========================================================
+
+    getControlValue(id) {
+
+        const fromState =
+            appState.get(id);
+
+        if (fromState !== undefined) {
+            return fromState;
+        }
+
+        const control =
+            this.state.controls.find(
+                c => c.id === id
+            );
+
+        return control ? control.value : undefined;
+
+    }
+
+
+    // =========================================================
+    // TOGGLE HIDDEN CONTROL
+    // =========================================================
+
+    toggleHiddenControl(controlId) {
+
+        const control =
+            this.state.controls.find(
+                c => c.id === controlId
+            );
+
+        if (!control) {
+            return;
+        }
+
+        if (control.type === "toggle") {
+            const current =
+                this.getControlValue(control.id);
+
+            const currentBool =
+                current !== undefined
+                    ? Boolean(current)
+                    : Boolean(control.value);
+
+            const newValue =
+                !currentBool;
+
+            control.value =
+                newValue;
+
+            appState.set(
+                control.id,
+                newValue,
+                this.id
+            );
+
+            this.updateControlState(
+                control.id,
+                newValue
+            );
+        }
+
+        if (
+            this.expansionManager?.isExpanded &&
+            this.expansionManager.expandedControlId === "more"
+        ) {
+            const content =
+                this._getHiddenControlsPanelContent();
+
+            this.expansionManager.panel.updateContent(content);
+        }
+
+    }
+
+
+    // =========================================================
+    // UPDATE CONTROL DOM STATE
+    // =========================================================
+
+    updateControlState(controlId, value) {
+
+        if (!this.element) {
+            return;
+        }
+
+        const btn =
+            this.element.querySelector(
+                `[data-control="${controlId}"]`
+            );
+
+        if (btn) {
+            const isActive =
+                Boolean(value);
+
+            btn.classList.toggle(
+                "active",
+                isActive
+            );
+
+            if (isActive) {
+                btn.dataset.active =
+                    "true";
+            } else {
+                delete btn.dataset.active;
+            }
+        }
+
+    }
+
+
+    // =========================================================
+    // CONNECT STATE (APPSTATE SUBSCRIPTIONS)
+    // =========================================================
+
+    connectState() {
+
+        if (this._unsubscribers) {
+            this._unsubscribers.forEach(unsub => unsub());
+            this._unsubscribers = [];
+        } else {
+            this._unsubscribers = [];
+        }
+
+        if (!Array.isArray(this.state.controls)) {
+            return;
+        }
+
+        this.state.controls.forEach(control => {
+            const unsub = appState.subscribe(
+                control.id,
+                (data) => {
+                    const val =
+                        typeof data === "object" && data !== null && "value" in data
+                            ? data.value
+                            : data;
+
+                    control.value = val;
+                    this.updateControlState(control.id, val);
+                }
+            );
+
+            this._unsubscribers.push(unsub);
+        });
+
+    }
+
+
+    // =========================================================
+    // GET HIDDEN CONTROLS PANEL CONTENT
+    // =========================================================
+
+    _getHiddenControlsPanelContent() {
+
+        const hiddenControls =
+            this.getHiddenControls();
+
+        if (!hiddenControls || !hiddenControls.length) {
+            return {
+                title: "Controles",
+                items: [
+                    {
+                        label: "No hay controles adicionales",
+                        secondary: "Todos los controles están visibles"
+                    }
+                ]
+            };
+        }
+
+        const items = hiddenControls.map(control => {
+
+            const isToggle =
+                control.type === "toggle";
+
+            const isSlider =
+                control.type === "slider";
+
+            const val =
+                this.getControlValue(control.id) ?? control.value;
+
+            const icon =
+                this.getControlIcon(control.id) || (isToggle ? "⌁" : "⚙");
+
+            if (isSlider) {
+
+                const sliderItem =
+                    document.createElement("div");
+
+                sliderItem.className =
+                    "cherry-expansion-panel__item";
+
+                sliderItem.style.flexDirection =
+                    "column";
+
+                sliderItem.style.alignItems =
+                    "stretch";
+
+                sliderItem.style.gap =
+                    "8px";
+
+                const topRow =
+                    document.createElement("div");
+
+                topRow.style.display =
+                    "flex";
+
+                topRow.style.alignItems =
+                    "center";
+
+                topRow.style.justifyContent =
+                    "space-between";
+
+                const labelSpan =
+                    document.createElement("span");
+
+                labelSpan.textContent =
+                    `${icon} ${control.label}`;
+
+                labelSpan.style.fontSize =
+                    "14px";
+
+                labelSpan.style.fontWeight =
+                    "500";
+
+                const valSpan =
+                    document.createElement("span");
+
+                valSpan.textContent =
+                    `${val ?? 0}%`;
+
+                valSpan.style.fontSize =
+                    "12px";
+
+                valSpan.style.opacity =
+                    "0.7";
+
+                topRow.appendChild(labelSpan);
+                topRow.appendChild(valSpan);
+
+                const input =
+                    document.createElement("input");
+
+                input.type =
+                    "range";
+
+                input.min =
+                    control.min ?? 0;
+
+                input.max =
+                    control.max ?? 100;
+
+                input.value =
+                    val ?? 50;
+
+                input.style.width =
+                    "100%";
+
+                input.style.accentColor =
+                    "var(--cherry-accent, #ff4b69)";
+
+                input.addEventListener("input", (e) => {
+                    const newVal = Number(e.target.value);
+                    valSpan.textContent = `${newVal}%`;
+                    control.value = newVal;
+                    appState.set(control.id, newVal, this.id);
+                });
+
+                sliderItem.appendChild(topRow);
+                sliderItem.appendChild(input);
+
+                return {
+                    element: sliderItem
+                };
+
+            }
+
+            const secondary =
+                isToggle
+                    ? (val ? "Activado" : "Desactivado")
+                    : (control.secondary || "Acción");
+
+            return {
+                id: control.id,
+                label: control.label,
+                icon,
+                secondary,
+                selected: isToggle ? Boolean(val) : false,
+                callback: () => {
+                    if (isToggle) {
+                        this.toggleHiddenControl(control.id);
+                    } else if (control.type === "action" && typeof control.action === "function") {
+                        control.action();
+                    }
+                }
+            };
+
+        });
+
+        return {
+            title: "Controles adicionales",
+            items
+        };
+
+    }
+
 
     // =========================================================
     // OPEN CONTROLS PANEL
     // =========================================================
 
-    openControlsPanel() {
+    openControlsPanel(buttonElement = null) {
 
-        console.log(
-            "Controls panel:",
-            this.getHiddenControls()
-        );
+        if (!this.expansionManager) {
+            return;
+        }
+
+        const anchor =
+            buttonElement ||
+            this.element?.querySelector(".cherry-controls-more") ||
+            this.element;
+
+        if (typeof this.expansionManager.openPanel === "function") {
+            this.expansionManager.openPanel({
+                id: "more",
+                label: "Controles adicionales",
+                element: anchor,
+                getContent: () => this._getHiddenControlsPanelContent()
+            });
+            return;
+        }
+
+        if (
+            this.expansionManager.isExpanded &&
+            this.expansionManager.expandedControlId === "more"
+        ) {
+            this.expansionManager.collapse?.();
+            return;
+        }
+
+        if (this.expansionManager.isExpanded) {
+            this.expansionManager.collapse?.();
+        }
+
+        this.expansionManager.isExpanded = true;
+        this.expansionManager.expandedControlId = "more";
+        this.expansionManager.expandedElement = anchor;
+
+        const content =
+            this._getHiddenControlsPanelContent();
+
+        this.expansionManager.panel.open({
+            id: "more",
+            label: "Controles adicionales",
+            content,
+            element: anchor,
+            container: this.expansionManager.root || document.body,
+            onClose: () => {
+                this.expansionManager.isExpanded = false;
+                this.expansionManager.expandedControlId = null;
+                this.expansionManager.expandedElement = null;
+            }
+        });
+
+        this.expansionManager.activePanel =
+            this.expansionManager.panel;
 
     }
 
@@ -1617,6 +2002,16 @@ getExpansionConfig(control) {
     // =========================================================
 
     destroy() {
+
+        if (this._unsubscribers) {
+            this._unsubscribers.forEach(unsub => unsub());
+            this._unsubscribers = [];
+        }
+
+        if (this.expansionManager) {
+            this.expansionManager.destroy();
+            this.expansionManager = null;
+        }
 
         super.destroy();
 

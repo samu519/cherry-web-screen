@@ -57,4 +57,63 @@
 #cherry-editor #cherry-canvas::before {
 
     content: "";
+}/* =========================================================
+   CHERRY — CANVAS LAYOUT
+   ========================================================= */
+
+#cherry-canvas {
+
+    position: relative;
+
+    width: var(--cherry-canvas-width);
+    height: var(--cherry-canvas-height);
+
+    margin: 0 auto;
+
+    overflow: hidden;
+
+    background: var(--cherry-background-base);
+
+    border-radius: var(--cherry-canvas-radius);
+
+    transition: background var(--cherry-transition-slow);
+}
+
+
+/* =========================================================
+   GRID — SOLO visible dentro del editor.
+   Cuando Editor.js mueve #cherry-canvas dentro de #cherry-editor,
+   este selector empieza a matchear y el grid aparece.
+   ========================================================= */
+
+#cherry-canvas::before {
+
+    content: none;
+
+    position: absolute;
+    inset: 0;
+
+    z-index: 0;
+
+    background-image:
+        linear-gradient(
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px
+        );
+
+    background-size: 32px 32px;
+
+    pointer-events: none;
+
+    opacity: 0.4;
+}
+
+#cherry-editor #cherry-canvas::before {
+
+    content: "";
 }

@@ -144,6 +144,16 @@ export class TextWidget extends Widget {
 
     }
 
+    // =========================================================
+    // SET TEXT
+    // =========================================================
+
+    setText(text) {
+        this.state.text = String(text ?? "");
+        this.update();
+        return true;
+    }
+
 
     // =========================================================
     // SET SIZE

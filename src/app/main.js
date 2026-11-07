@@ -69,7 +69,13 @@ async function saveCurrentLayout() {
         accentColor: getComputedStyle(document.documentElement)
             .getPropertyValue('--cherry-accent')
             .trim(),
-        themeMode: document.documentElement.getAttribute('data-theme') || 'dark'
+
+        themeMode:
+            document.documentElement.getAttribute('data-theme') || 'dark',
+
+        backgroundMode:
+            document.getElementById('cherry-canvas')
+                ?.getAttribute('data-background-mode') || 'static'
     };
 
     currentLayoutState = widgetsState;
@@ -115,15 +121,29 @@ function loadSavedLayout() {
 }
 
 function applySavedAppearance(appearance) {
-
     if (!appearance) return;
 
     if (appearance.accentColor) {
-        document.documentElement.style.setProperty('--cherry-accent', appearance.accentColor);
+        document.documentElement.style.setProperty(
+            '--cherry-accent',
+            appearance.accentColor
+        );
     }
 
     if (appearance.themeMode) {
-        document.documentElement.setAttribute('data-theme', appearance.themeMode);
+        document.documentElement.setAttribute(
+            'data-theme',
+            appearance.themeMode
+        );
+    }
+
+    const canvas = document.getElementById('cherry-canvas');
+
+    if (canvas) {
+        canvas.setAttribute(
+            'data-background-mode',
+            appearance.backgroundMode || 'static'
+        );
     }
 }
 // =====================================================
@@ -197,7 +217,35 @@ const canvas = new Canvas({
     gap: 12
 });
 
+/* function initializeBackground() {
+    const canvasElement = canvas.element;
 
+    if (!canvasElement) return;
+
+    canvasElement.setAttribute(
+        'data-background-mode',
+        canvasElement.getAttribute('data-background-mode') || 'static'
+    );
+
+    if (canvasElement.querySelector('.cherry-background')) {
+        return;
+    }
+
+    const background = document.createElement('div');
+    background.className = 'cherry-background';
+    background.setAttribute('aria-hidden', 'true');
+
+    for (let i = 1; i <= 3; i++) {
+        const point = document.createElement('div');
+        point.className = `cherry-background__point cherry-background__point--${i}`;
+
+        background.appendChild(point);
+    }
+
+    canvasElement.prepend(background);
+}
+
+initializeBackground(); */
 // =====================================================
 // CREAR WIDGETS
 // =====================================================

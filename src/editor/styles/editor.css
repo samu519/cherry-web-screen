@@ -272,6 +272,16 @@
     border-color: var(--cherry-accent);
 }
 
+.cherry-property-control__textarea {
+    width: 100%;
+    min-height: 90px;
+    resize: vertical;
+    box-sizing: border-box;
+    font: inherit;
+    padding: 10px 12px;
+    border-radius: 12px;
+}
+
 /* ---------------------------------------------------------
    WIDGET LIBRARY (DERECHA)
    --------------------------------------------------------- */

@@ -31,6 +31,7 @@ export class Editor {
         this.originalNextSibling = this.canvasElement.nextSibling;
 
         this._boundHandlers = [];
+        this._boundElementHandlers = [];
 
         /* -------------------------------------------------
            ESTADO
@@ -62,6 +63,8 @@ export class Editor {
         this.canvasGrid = null;
         this.canvasGuides = null;
         this.toolbar = null;
+
+        this.backgroundMode = 'static';
 
 
         /* -------------------------------------------------
@@ -124,6 +127,18 @@ export class Editor {
     _onDocument(event, handler) {
         document.addEventListener(event, handler);   // ✅ llama al DOM real, no a sí mismo
         this._boundHandlers.push({ event, handler });
+    }
+
+    _onElement(element, event, handler) {
+        if (!element) return;
+
+        element.addEventListener(event, handler);
+
+        this._boundElementHandlers.push({
+            element,
+            event,
+            handler
+        });
     }
 
 
@@ -222,8 +237,25 @@ export class Editor {
             }
         );
 
+        const backgroundControl = this.createPropertyControl(
+            'Fondo',
+            ['static', 'dynamic'],
+            this.state.backgroundMode,
+            (mode) => {
+                this.state.setBackgroundMode(mode);
+
+                if (
+                    window.cherryApp &&
+                    typeof window.cherryApp.saveLayout === 'function'
+                ) {
+                    window.cherryApp.saveLayout();
+                }
+            }
+        );
+
         appearanceSection.appendChild(appearanceTitle);
         appearanceSection.appendChild(accentControl);
+        appearanceSection.appendChild(backgroundControl);
         appearanceSection.appendChild(themeControl);
 
         // Sección de propiedades del widget
@@ -296,7 +328,28 @@ export class Editor {
 
             const sizeOptions = widget?.sizePresets ? Object.keys(widget.sizePresets) : ['mini', 'small', 'medium', 'large'];
             const styleOptions = widget?.styles ? Object.keys(widget.styles) : ['default', 'widget', 'bar', 'buttons', 'visualizer'];
-            const variantOptions = ['translucid', 'solid', 'glass', 'dark', 'light'];
+            const variantOptions = ['translucid', 'solid', 'glass'];
+
+            const textControl = widgetType === 'text'
+                ? this.createTextPropertyControl(
+                    'Texto',
+                    widget?.state?.text ?? '',
+                    (value) => {
+                        if (typeof widget?.setText === 'function') {
+                            widget.setText(value);
+                        }
+                    },
+                    () => {
+                        this.recordHistory('Cambio de texto');
+                        if (
+                            window.cherryApp &&
+                            typeof window.cherryApp.saveLayout === 'function'
+                        ) {
+                            window.cherryApp.saveLayout();
+                        }
+                    }
+                )
+                : null;
 
             const sizeControl = this.createPropertyControl('Tamaño', sizeOptions, widgetSize, (value) => {
                 const updated = this.canvasAdapter.setWidgetSize(widgetId, value);
@@ -322,6 +375,9 @@ export class Editor {
                 }
                 this.recordHistory('Cambio de estilo desde inspector');
             });
+            if (textControl) {
+                propertiesSection.appendChild(textControl);
+            }
 
             propertiesSection.appendChild(sizeControl);
             propertiesSection.appendChild(variantControl);
@@ -343,6 +399,37 @@ export class Editor {
 
             propertiesSection.appendChild(emptyState);
         }
+    }
+
+    createTextPropertyControl(label, value, onInput, onCommit) {
+        const control = document.createElement('div');
+        control.className = 'cherry-property-control';
+
+        const labelEl = document.createElement('label');
+        labelEl.textContent = label;
+
+        const textarea = document.createElement('textarea');
+        textarea.className = 'cherry-property-control__textarea';
+        textarea.value = value;
+
+        textarea.rows = 4;
+
+        textarea.addEventListener('input', (e) => {
+            if (onInput) {
+                onInput(e.target.value);
+            }
+        });
+
+        textarea.addEventListener('change', () => {
+            if (onCommit) {
+                onCommit();
+            }
+        });
+
+        control.appendChild(labelEl);
+        control.appendChild(textarea);
+
+        return control;
     }
 
 
@@ -634,12 +721,12 @@ export class Editor {
             list.appendChild(card);
         });
 
-        this.canvasElement.addEventListener('dragover', (e) => {
+        this._onElement(this.canvasElement, 'dragover', (e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'copy';
         });
 
-        this.canvasElement.addEventListener('drop', (e) => {
+        this._onElement(this.canvasElement, 'drop', (e) => {
             e.preventDefault();
             const widgetType = e.dataTransfer.getData('widget-type');
             if (!widgetType) return;
@@ -944,7 +1031,7 @@ export class Editor {
     setupCanvasInteractions() {
 
         // Click en widget para seleccionar
-        this.canvasElement.addEventListener('click', (e) => {
+        this._onElement(this.canvasElement, 'click', (e) => {
 
             if (e.target === this.canvasElement) {
                 this.state.clearSelection();
@@ -972,7 +1059,7 @@ export class Editor {
         });
 
         // Right-click para menú contextual
-        this.canvasElement.addEventListener('contextmenu', (e) => {
+        this._onElement(this.canvasElement, 'contextmenu', (e) => {
 
             const widget = e.target.closest('.cherry-widget');
 
@@ -984,7 +1071,7 @@ export class Editor {
         });
 
         // Drag para mover widgets
-        this.canvasElement.addEventListener('mousedown', (e) => {
+        this._onElement(this.canvasElement, 'mousedown', (e) => {
 
             const widget = e.target.closest('.cherry-widget');
             const isMenuButton = e.target.closest('.cherry-widget-menu-button');
@@ -1245,6 +1332,8 @@ export class Editor {
                 onAction: () => {
                     if (this.overlayManager && typeof this.overlayManager.closeAll === 'function') {
                         this.overlayManager.closeAll();
+                        this.selectionManager.clearSelection();
+                        this.state.clearSelection();
                     }
                 }
             });
@@ -1348,7 +1437,7 @@ export class Editor {
         if (widgetObject) {
             const sizeOptions = widgetObject.sizePresets ? Object.keys(widgetObject.sizePresets) : ['mini', 'small', 'medium', 'large'];
             const styleOptions = widgetObject.styles ? Object.keys(widgetObject.styles) : ['default', 'widget', 'bar', 'buttons'];
-            const variantOptions = ['translucid', 'solid', 'glass', 'dark', 'light'];
+            const variantOptions = ['translucid', 'solid', 'glass'];
 
             actions.push({ divider: true });
             actions.push({ label: `Tamaño: ${widgetObject.size || 'small'}`, action: 'size', value: sizeOptions[0] });
@@ -1599,42 +1688,56 @@ export class Editor {
    SALIR DEL EDITOR
    ===================================================== */
 
-exitEditor() {
+    exitEditor() {
+        console.log('✓ Exiting editor...');
 
-    console.log('✓ Exiting editor...');
+        // Limpiar overlays
+        this.overlayManager.closeAll();
 
-    // Limpiar overlays
-    this.overlayManager.closeAll();
+        // Limpiar completamente la selección
+        this.selectionManager.clearSelection();
+        this.state.clearSelection();
 
-    // Devolver el canvas a su ubicación ORIGINAL antes de destruir
-    // el contenedor del editor (evita que quede huérfano/detached)
-    if (this.originalParent) {
-        if (this.originalNextSibling && this.originalNextSibling.parentNode === this.originalParent) {
-            this.originalParent.insertBefore(this.canvasElement, this.originalNextSibling);
-        } else {
-            this.originalParent.appendChild(this.canvasElement);
+        // Devolver el canvas a su ubicación ORIGINAL antes de destruir
+        if (this.originalParent) {
+            if (
+                this.originalNextSibling &&
+                this.originalNextSibling.parentNode === this.originalParent
+            ) {
+                this.originalParent.insertBefore(
+                    this.canvasElement,
+                    this.originalNextSibling
+                );
+            } else {
+                this.originalParent.appendChild(this.canvasElement);
+            }
+        }
+
+        // Remover container del editor
+        if (this.editorContainer && this.editorContainer.parentNode) {
+            this.editorContainer.remove();
+        }
+
+        // Quitar TODOS los listeners de document que esta instancia registró
+        this._boundHandlers.forEach(({ event, handler }) => {
+            document.removeEventListener(event, handler);
+        });
+
+        this._boundHandlers = [];
+        this._boundElementHandlers.forEach(({ element, event, handler }) => {
+            element.removeEventListener(event, handler);
+        });
+
+        this._boundElementHandlers = [];
+
+        // Destruir overlay manager
+        if (typeof this.overlayManager.destroy === 'function') {
+            this.overlayManager.destroy();
+        }
+
+        // Llamar callback de salida
+        if (window.cherryApp && window.cherryApp.exitEditor) {
+            window.cherryApp.exitEditor();
         }
     }
-
-    // Remover container del editor (ya sin el canvas adentro)
-    if (this.editorContainer && this.editorContainer.parentNode) {
-        this.editorContainer.remove();
-    }
-
-    // Quitar TODOS los listeners de document que esta instancia registró
-    this._boundHandlers.forEach(({ event, handler }) => {
-        document.removeEventListener(event, handler);
-    });
-    this._boundHandlers = [];
-
-    // Destruir el overlay manager (sus propios listeners de document)
-    if (typeof this.overlayManager.destroy === 'function') {
-        this.overlayManager.destroy();
-    }
-
-    // Llamar callback de salida si existe
-    if (window.cherryApp && window.cherryApp.exitEditor) {
-        window.cherryApp.exitEditor();
-    }
-}
 }

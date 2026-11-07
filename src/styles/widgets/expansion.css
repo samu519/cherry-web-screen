@@ -179,10 +179,31 @@
 }
 
 
+.cherry-expansion-panel__item.interactive {
+    cursor: pointer;
+    user-select: none;
+}
+
 .cherry-expansion-panel__item:hover {
 
     background:
         rgba(255, 255, 255, 0.09);
+}
+
+.cherry-expansion-panel__item.selected {
+    background: var(--cherry-accent-medium);
+    border-color: var(--cherry-accent-border);
+    box-shadow: 0 8px 24px var(--cherry-accent-shadow);
+    color: var(--cherry-white, #ffffff);
+}
+
+.cherry-expansion-panel__item.selected:hover {
+    background: var(--cherry-accent-glow, color-mix(in srgb, var(--cherry-accent) 40%, transparent));
+    border-color: var(--cherry-accent-border);
+}
+
+.cherry-expansion-panel__item.selected .cherry-expansion-panel__item-icon {
+    color: var(--cherry-white, #ffffff);
 }
 
 

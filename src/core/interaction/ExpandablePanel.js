@@ -56,7 +56,12 @@ export class ExpandablePanel {
             label,
             content,
             onAction,
-            onClose
+            onClose: () => {
+                this.close();
+                if (typeof onClose === 'function') {
+                    onClose();
+                }
+            }
         });
 
         this.isOpen = true;
@@ -68,7 +73,7 @@ export class ExpandablePanel {
                 id: `expansion-${id}`,
                 content: this.panelElement,
                 className: 'cherry-overlay--expansion',
-                allowOutsideDismiss: false,
+                allowOutsideDismiss: true,
                 onClose: () => {
                     this.isOpen = false;
                     this.currentControlId = null;
@@ -244,6 +249,10 @@ export class ExpandablePanel {
      * Create a single content item
      */
     _createContentItem(item, onAction) {
+        if (item && item.element instanceof HTMLElement) {
+            return item.element;
+        }
+
         const itemEl = document.createElement('div');
         itemEl.className = 'cherry-expansion-panel__item';
 

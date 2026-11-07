@@ -49,7 +49,12 @@ export class EditorState {
             .getPropertyValue('--cherry-accent')
             .trim();
 
-        this.themeMode = document.documentElement.getAttribute('data-theme') || 'dark';
+        this.themeMode =
+            document.documentElement.getAttribute('data-theme') || 'dark';
+
+        this.backgroundMode =
+            document.getElementById('cherry-canvas')?.getAttribute('data-background-mode')
+            || 'static';
 
 
         /* -------------------------------------------------
@@ -139,6 +144,20 @@ export class EditorState {
         }
     }
 
+    setBackgroundMode(mode) {
+        if (['static', 'dynamic'].includes(mode)) {
+            this.backgroundMode = mode;
+
+            const canvas = document.getElementById('cherry-canvas');
+
+            if (canvas) {
+                canvas.setAttribute('data-background-mode', mode);
+            }
+
+            this.notify();
+        }
+    }
+
 
     /* =====================================================
        ZOOM Y PAN
@@ -214,6 +233,20 @@ export class EditorState {
         }
     }
 
+    setBackgroundMode(mode) {
+        if (['static', 'dynamic'].includes(mode)) {
+            this.backgroundMode = mode;
+
+            const canvas = document.getElementById('cherry-canvas');
+
+            if (canvas) {
+                canvas.setAttribute('data-background-mode', mode);
+            }
+
+            this.notify();
+        }
+    }
+
 
     toggleThemeMode() {
 
@@ -222,19 +255,19 @@ export class EditorState {
 
 
     getState() {
-
-        return {
-            mode: this.mode,
-            selectedWidgets: [...this.selectedWidgets],
-            focusedWidget: this.focusedWidget,
-            zoom: this.zoom,
-            panX: this.panX,
-            panY: this.panY,
-            gridVisible: this.gridVisible,
-            snapEnabled: this.snapEnabled,
-            guidesVisible: this.guidesVisible,
-            accentColor: this.accentColor,
-            themeMode: this.themeMode
-        };
-    }
+    return {
+        mode: this.mode,
+        selectedWidgets: [...this.selectedWidgets],
+        focusedWidget: this.focusedWidget,
+        zoom: this.zoom,
+        panX: this.panX,
+        panY: this.panY,
+        gridVisible: this.gridVisible,
+        snapEnabled: this.snapEnabled,
+        guidesVisible: this.guidesVisible,
+        accentColor: this.accentColor,
+        themeMode: this.themeMode,
+        backgroundMode: this.backgroundMode
+    };
+}
 }

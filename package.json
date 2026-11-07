@@ -1,0 +1,12 @@
+{
+  "name": "cherry-web-screen",
+  "version": "0.1.0",
+  "description": "Cherry Web Screen",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4"
+  }
+}

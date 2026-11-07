@@ -557,6 +557,42 @@ export class ExpansionManager {
 
 
     // =========================================================
+    // OPEN PANEL (PROGRAMMATIC / CLICK)
+    // =========================================================
+
+    openPanel({
+        id = "more",
+        label = "Controles",
+        element = null,
+        getContent = () => null,
+        onAction = null
+    } = {}) {
+
+        if (
+            this.isExpanded &&
+            this.expandedControlId === id
+        ) {
+            this.collapse();
+            return;
+        }
+
+        const payload = {
+            id,
+            label,
+            element,
+            getContent:
+                typeof getContent === "function"
+                    ? getContent
+                    : () => getContent,
+            onAction
+        };
+
+        this._expand(payload);
+
+    }
+
+
+    // =========================================================
     // TOGGLE
     // =========================================================
 

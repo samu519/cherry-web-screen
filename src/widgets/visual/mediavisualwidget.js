@@ -72,7 +72,7 @@ export class MediaVisualWidget extends Widget {
 
                 {
                     type: "image",
-                    src: "../../assets/media/portada1.jpg"
+                    src: "../../assets/media/portada.png"
                 },
 
                 {
@@ -81,8 +81,8 @@ export class MediaVisualWidget extends Widget {
                 },
 
                 {
-                    type: "gif",
-                    src: "../../assets/media/animation.gif"
+                    type: "image",
+                    src: "../../assets/media/cherry.jpg"
                 }
 
             ],
@@ -142,6 +142,10 @@ export class MediaVisualWidget extends Widget {
 
             gallery: {
                 name: "Gallery"
+            },
+
+            visualizer: {
+                name: "Visualizer"
             }
 
         };
@@ -481,8 +485,12 @@ export class MediaVisualWidget extends Widget {
                 "cherry-media-visual-image"
             );
 
-            image.src =
-                media.src;
+            let src = media.src;
+            if (typeof src === "string" && src.includes("portada1.jpg")) {
+                src = src.replace("portada1.jpg", "portada.png");
+            }
+
+            image.src = src;
 
             image.alt =
                 media.alt ?? "";
