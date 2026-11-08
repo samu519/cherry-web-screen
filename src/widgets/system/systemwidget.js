@@ -1,4 +1,5 @@
-import { Widget } from "../../core/widgets/Widget.js";
+import { Widget } from "../../core/widgets/widget.js";
+import { nativeService } from '../../services/nativeService.js';
 
 export class SystemWidget extends Widget {
 
@@ -283,6 +284,10 @@ export class SystemWidget extends Widget {
 
         this.element.innerHTML = "";
 
+        const telemetry = nativeService.snapshot?.telemetry;
+        const readings = nativeService.isNative ? Object.fromEntries(['cpu', 'gpu', 'ram', 'temperature'].map(id => [id, telemetry?.[id]?.value ?? null])) : this.state;
+        this.element.dataset.telemetrySource = nativeService.mode;
+
 
         /* =====================================================
            HEADER
@@ -310,6 +315,11 @@ export class SystemWidget extends Widget {
         header.appendChild(
             title
         );
+        const badge = document.createElement('span');
+        badge.className = 'cherry-provider-badge';
+        badge.textContent = { demo: 'Demo', connecting: 'Conectando…', live: nativeService.snapshot?.provider === 'windows' ? 'Windows' : 'Sin proveedor', offline: 'Sin conexión' }[nativeService.mode];
+        badge.title = nativeService.error || (nativeService.isNative ? 'Lecturas del equipo' : 'Datos de ejemplo; abre la aplicación de escritorio para conectar con Windows.');
+        header.appendChild(badge);
 
         this.element.appendChild(
             header
@@ -335,7 +345,7 @@ export class SystemWidget extends Widget {
             metrics.appendChild(
                 this.createMetric(
                     "CPU",
-                    this.state.cpu,
+                    readings.cpu,
                     "%"
                 )
             );
@@ -350,7 +360,7 @@ export class SystemWidget extends Widget {
             metrics.appendChild(
                 this.createMetric(
                     "GPU",
-                    this.state.gpu,
+                    readings.gpu,
                     "%"
                 )
             );
@@ -365,7 +375,7 @@ export class SystemWidget extends Widget {
             metrics.appendChild(
                 this.createMetric(
                     "RAM",
-                    this.state.ram,
+                    readings.ram,
                     "%"
                 )
             );
@@ -380,7 +390,7 @@ export class SystemWidget extends Widget {
             metrics.appendChild(
                 this.createMetric(
                     "Temperature",
-                    this.state.temperature,
+                    readings.temperature,
                     "°C"
                 )
             );
@@ -407,6 +417,11 @@ createMetric(
 
     const metric =
         document.createElement("div");
+    const available = typeof value === 'number' && Number.isFinite(value);
+    metric.dataset.available = String(available);
+    const id = label === 'Temperature' ? 'temperature' : label.toLowerCase();
+    const reason = nativeService.snapshot?.telemetry[id]?.reason || (available ? 'Lectura confirmada por Windows.' : nativeService.error || 'Esperando una lectura del equipo.');
+    if (nativeService.isNative) { metric.title = reason; metric.setAttribute('aria-label', `${label}: ${available ? Math.round(value) + unit : 'No disponible. ' + reason}`); }
 
     metric.classList.add(
         "cherry-system-metric"
@@ -440,7 +455,7 @@ createMetric(
     );
 
     valueElement.textContent =
-        `${value}${unit}`;
+        available ? `${Math.round(value)}${unit}` : '—';
 
 
     // =====================================================
@@ -463,7 +478,7 @@ createMetric(
     );
 
     progress.style.width =
-        `${value}%`;
+        `${available ? Math.min(100, Math.max(0, value)) : 0}%`;
 
 
     bar.appendChild(
@@ -476,10 +491,10 @@ createMetric(
     // =====================================================
 
     metric.dataset.value =
-        value;
+        available ? value : '';
     metric.style.setProperty(
         "--metric-value",
-        value
+        available ? Math.min(100, Math.max(0, value)) : 0
     );
 
     // =====================================================

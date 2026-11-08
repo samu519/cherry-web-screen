@@ -4,9 +4,18 @@
   "description": "Cherry Web Screen",
   "type": "module",
   "scripts": {
-    "tauri": "tauri"
+    "native:prepare": "node scripts/prepare-native.mjs",
+    "native:dev": "tauri dev",
+    "native:build": "tauri build",
+    "test:native-ui": "node tests/browser-native.mjs",
+    "test:native-live": "node tests/native-live.mjs",
+    "tauri": "tauri",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node tests/browser-interaction.mjs && node tests/browser-layout.mjs",
+    "test:layout": "node tests/browser-layout.mjs"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.11.4"
+    "@tauri-apps/cli": "^2.11.4",
+    "playwright": "^1.65.0"
   }
 }

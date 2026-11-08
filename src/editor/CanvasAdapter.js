@@ -1,3 +1,4 @@
+import { widgetRegistry } from '../core/widgets/widgetRegistry.js';
 /* =========================================================
    CHERRY EDITOR — CANVAS ADAPTER
    Puente entre el Editor y el Canvas del core
@@ -182,37 +183,18 @@ export class CanvasAdapter {
        ===================================================== */
 
     duplicateWidget(widgetId) {
-
-        const widget = this.getWidget(widgetId);
-
-        if (!widget) return null;
-
-        // Crear clone del widget
-        const config = {
-            id: `widget-${crypto.randomUUID()}`,
-            type: widget.type,
-            size: widget.size,
-            variant: widget.variant,
-            style: widget.style,
-            layout: {
-                column: widget.layout.column + 1,
-                row: widget.layout.row,
-                columns: widget.layout.columns,
-                rows: widget.layout.rows
-            },
-            settings: { ...widget.settings },
-            state: { ...widget.state }
-        };
-
-        // Aquí necesitaríamos la clase del widget para poder instanciarlo
-        // Por ahora, solo retornamos la configuración
-        return config;
+        const source = this.getWidget(widgetId);
+        if (!source) return null;
+        const descriptor = widgetRegistry.serialize(source);
+        descriptor.id = 'widget-' + crypto.randomUUID();
+        descriptor.geometry.x += this.canvas.layoutMode === 'grid' ? this.canvas.grid.getColumnWidth() + this.canvas.grid.gap : 16;
+        descriptor.geometry.y += this.canvas.layoutMode === 'grid' ? this.canvas.grid.getRowHeight() + this.canvas.grid.gap : 16;
+        descriptor.flags.hidden = false; descriptor.flags.locked = false;
+        const copy = widgetRegistry.create(descriptor);
+        this.canvas.addWidget(copy, { geometry: descriptor.geometry });
+        widgetRegistry.applyFlags(copy);
+        return copy;
     }
-
-
-    /* =====================================================
-       CAMBIAR Z-INDEX (ORDEN)
-       ===================================================== */
 
     bringToFront(widgetId) {
 
@@ -224,7 +206,8 @@ export class CanvasAdapter {
             ...this.canvas.widgets.map(w => w.element?.style.zIndex || 0)
         );
 
-        widget.element.style.zIndex = maxZ + 1;
+        widget.flags.zIndex = Math.min(99, Number(maxZ) + 1);
+        widgetRegistry.applyFlags(widget);
 
         return widget;
     }
@@ -240,7 +223,8 @@ export class CanvasAdapter {
             ...this.canvas.widgets.map(w => w.element?.style.zIndex || 0)
         );
 
-        widget.element.style.zIndex = minZ - 1;
+        widget.flags.zIndex = Math.max(0, Number(minZ) - 1);
+        widgetRegistry.applyFlags(widget);
 
         return widget;
     }

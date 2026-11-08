@@ -1,13 +1,14 @@
 import { OverlayManager } from './OverlayManager.js';
 
 export class ContextPopover {
-    constructor({ root = document.body, overlayManager = null, preferredSide = 'bottom-left' } = {}) {
+    constructor({ root = document.body, overlayManager = null, preferredSide = 'center', onClose = null } = {}) {
         this.root = root || document.body;
         this.overlayManager = overlayManager || new OverlayManager(this.root);
         this.preferredSide = preferredSide;
         this.menuElement = null;
         this.isOpen = false;
         this.onAction = null;
+        this.onClose = onClose;
     }
 
     open({ target, title = null, actions = [], position = null, onAction = null, preferredSide = this.preferredSide } = {}) {
@@ -40,7 +41,10 @@ export class ContextPopover {
 
         const menu = createNode('div', 'cherry-context-popover');
         if (typeof menu.setAttribute === 'function') {
-            menu.setAttribute('role', 'menu');
+            menu.setAttribute('role', 'dialog');
+            menu.setAttribute('aria-modal', 'true');
+            menu.setAttribute('aria-label', title || 'Acciones del widget');
+            menu.setAttribute('tabindex', '-1');
         }
 
         if (title) {
@@ -59,7 +63,7 @@ export class ContextPopover {
 
             const item = createNode('button', 'cherry-context-popover__item', action.label || 'Action');
             if (typeof item.setAttribute === 'function') {
-                item.setAttribute('role', 'menuitem');
+                item.setAttribute('type', 'button');
             }
 
             item.addEventListener = item.addEventListener || (() => {});
@@ -90,15 +94,17 @@ export class ContextPopover {
             content: menu,
             className: 'cherry-overlay--context',
             allowOutsideDismiss: true,
+            returnFocus: target,
             onClose: () => {
                 this.isOpen = false;
                 this.menuElement = null;
+                this.onClose?.();
             }
         });
 
         this.isOpen = true;
 
-        if (target && overlayElement) {
+        if (target && overlayElement && preferredSide !== 'center') {
             const menuSize = {
                 width: menu.offsetWidth || 220,
                 height: menu.offsetHeight || 180
@@ -143,8 +149,14 @@ export class ContextPopover {
         const margin = 12;
         const containerLeft = containerRect.left || 0;
         const containerTop = containerRect.top || 0;
-        const containerRight = (containerRect.right ?? containerRect.left + containerRect.width) || menuWidth + margin;
-        const containerBottom = (containerRect.bottom ?? containerRect.top + containerRect.height) || menuHeight + margin;
+        // Positions are local to the root, not viewport right/bottom coordinates.
+        const containerRight = containerRect.width ?? containerRect.right - containerLeft;
+        const containerBottom = containerRect.height ?? containerRect.bottom - containerTop;
+
+        if (preferredSide === 'center') {
+            return { x: Math.max(margin, (containerRight - menuWidth) / 2),
+                y: Math.max(margin, (containerBottom - menuHeight) / 2), side: 'center' };
+        }
 
         const candidates = [];
         const preferred = [preferredSide, 'bottom-left', 'top-left', 'bottom-right', 'top-right', 'right-center', 'left-center', 'bottom-center', 'top-center'];

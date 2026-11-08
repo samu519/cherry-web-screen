@@ -19,6 +19,9 @@ function createFakeElement({ left = 0, top = 0, width = 120, height = 40 } = {})
       if (!listeners.has(type)) listeners.set(type, []);
       listeners.get(type).push(callback);
     },
+    removeEventListener(type, callback) {
+      listeners.set(type, (listeners.get(type) || []).filter(item => item !== callback));
+    },
     dispatch(type, event = {}) {
       const callbacks = listeners.get(type) || [];
       for (const callback of callbacks) {
@@ -98,4 +101,66 @@ test('ContextPopover clamps menu within the visible area', async () => {
   assert.ok(position.x + 220 <= 500, 'menu should not overflow right');
   assert.ok(position.y >= 0, 'menu should not overflow top');
   assert.ok(position.y + 180 <= 600, 'menu should not overflow bottom');
+});
+
+test('hold cancels on short release, movement, pointer loss and cancellation', async (t) => {
+  const { HoldGesture } = await import('../src/core/interaction/HoldGesture.js');
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let opened = 0;
+  const target = createFakeElement();
+  const gesture = new HoldGesture({ onHold: () => opened++ });
+  gesture.register(target);
+  for (const type of ['pointerup', 'pointercancel', 'pointerleave', 'lostpointercapture']) {
+    target.dispatch('pointerdown', { clientX: 10, clientY: 10, pointerId: 1 });
+    t.mock.timers.tick(250);
+    target.dispatch(type, { pointerId: 1 });
+    t.mock.timers.tick(500);
+  }
+  target.dispatch('pointerdown', { clientX: 10, clientY: 10, pointerId: 1 });
+  target.dispatch('pointermove', { clientX: 30, clientY: 10, pointerId: 1 });
+  t.mock.timers.tick(500);
+  assert.equal(opened, 0);
+  target.dispatch('pointerdown', { clientX: 10, clientY: 10, pointerId: 1 });
+  t.mock.timers.tick(499);
+  assert.equal(opened, 0);
+  t.mock.timers.tick(1);
+  assert.equal(opened, 1);
+  gesture.destroy();
+});
+
+test('re-registration and destruction leave no duplicate handlers or pending holds', async (t) => {
+  const { HoldGesture } = await import('../src/core/interaction/HoldGesture.js');
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let opened = 0;
+  const target = createFakeElement();
+  const gesture = new HoldGesture({ onHold: () => opened++ });
+  gesture.register(target); gesture.register(target);
+  target.dispatch('pointerdown', { clientX: 0, clientY: 0 });
+  t.mock.timers.tick(500);
+  assert.equal(opened, 1);
+  target.dispatch('pointerdown', { clientX: 0, clientY: 0 });
+  gesture.destroy();
+  t.mock.timers.tick(500);
+  target.dispatch('pointerdown', { clientX: 0, clientY: 0 });
+  t.mock.timers.tick(500);
+  assert.equal(opened, 1);
+});
+
+test('post-hold click suppression targets the original control and never eats panel actions', async (t) => {
+  const { HoldGesture } = await import('../src/core/interaction/HoldGesture.js');
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const target = createFakeElement();
+  const gesture = new HoldGesture({ onHold() {} });
+  gesture.register(target);
+  const hold = () => {
+    target.dispatch('pointerdown', { clientX: 0, clientY: 0 });
+    t.mock.timers.tick(500);
+  };
+  let prevented = 0;
+  const click = clicked => gesture.onClick({ target: clicked, preventDefault() { prevented++; }, stopPropagation() {} });
+  hold(); click(target); click(target);
+  assert.equal(prevented, 1);
+  hold(); click(createFakeElement());
+  assert.equal(prevented, 1, 'first panel action remains clickable');
+  gesture.destroy();
 });

@@ -10,6 +10,11 @@
  * - Provides blur overlay
  * ========================================================= */
 
+import { OverlayManager } from './OverlayManager.js';
+import { nativeService } from '../../services/nativeService.js';
+
+let panelSequence = 0;
+
 export class ExpandablePanel {
     constructor({
         root = document.body,
@@ -17,7 +22,7 @@ export class ExpandablePanel {
         animationDuration = 250
     } = {}) {
         this.root = root || document.body;
-        this.overlayManager = overlayManager;
+        this.overlayManager = overlayManager || new OverlayManager(this.root);
         this.animationDuration = animationDuration;
 
         // UI elements
@@ -48,7 +53,7 @@ export class ExpandablePanel {
         // Close previous
         this.close();
 
-        const containerEl = container || this.root;
+        if (nativeService.isSystemControl(id)) content = this.nativeContent(id, label);
 
         // Create panel structure
         this.panelElement = this._createPanelElement({
@@ -56,16 +61,14 @@ export class ExpandablePanel {
             label,
             content,
             onAction,
-            onClose: () => {
-                this.close();
-                if (typeof onClose === 'function') {
-                    onClose();
-                }
-            }
+            onClose: () => this.close()
         });
 
         this.isOpen = true;
         this.currentControlId = id;
+        if (nativeService.isSystemControl(id)) this.unsubscribeNative = nativeService.subscribe(() => {
+            this.updateContent(this.nativeContent(id, label));
+        });
 
         // Create overlay with blur
         if (this.overlayManager) {
@@ -74,10 +77,13 @@ export class ExpandablePanel {
                 content: this.panelElement,
                 className: 'cherry-overlay--expansion',
                 allowOutsideDismiss: true,
+                returnFocus: element,
                 onClose: () => {
+                    this.unsubscribeNative?.(); this.unsubscribeNative = null;
                     this.isOpen = false;
                     this.currentControlId = null;
                     this.panelElement = null;
+                    this.contentElement = null;
                     if (typeof onClose === 'function') {
                         onClose();
                     }
@@ -85,13 +91,10 @@ export class ExpandablePanel {
             });
         } else {
             // Fallback: append directly
-            containerEl.appendChild(this.panelElement);
+            (container || this.root).appendChild(this.panelElement);
         }
 
-        // Position the panel
-        if (element && this.panelElement) {
-            this._positionPanel(element, this.panelElement, containerEl);
-        }
+        // The overlay centers the panel in canvas coordinates, independent of the trigger.
 
         // Animate in
         this._animateIn(this.panelElement);
@@ -105,15 +108,17 @@ export class ExpandablePanel {
             return;
         }
 
-        this._animateOut(this.panelElement, () => {
-            if (this.overlayManager) {
-                this.overlayManager.close(`expansion-${this.currentControlId}`);
-            } else if (this.panelElement && this.panelElement.parentNode) {
-                this.panelElement.parentNode.removeChild(this.panelElement);
-            }
-        });
+        // Close synchronously so a delayed callback cannot close a newly opened panel.
+        this.overlayManager.close(`expansion-${this.currentControlId}`);
+    }
 
-        this.isOpen = false;
+    nativeContent(id, label) {
+        const control = nativeService.control(id);
+        const value = control?.available ? (typeof control.value === 'boolean' ? (control.value ? 'Activado' : 'Desactivado') : `${control.value}%`) : 'No disponible';
+        return { title: label, items: [
+            { label: value, secondary: nativeService.pending.has(id) ? 'Esperando confirmación de Windows…' : (control?.reason || 'Estado confirmado por Windows') },
+            ...(['wifi', 'bluetooth'].includes(id) ? [{ label: 'Dispositivos y conexiones', secondary: 'La exploración de redes y el emparejamiento aún no están implementados.' }] : [])
+        ] };
     }
 
     /**
@@ -123,6 +128,9 @@ export class ExpandablePanel {
         const panel = document.createElement('div');
         panel.className = 'cherry-expansion-panel';
         panel.dataset.controlId = id;
+        panel.setAttribute('role', 'dialog');
+        panel.setAttribute('aria-modal', 'true');
+        panel.tabIndex = -1;
 
         // Header
         const header = document.createElement('div');
@@ -131,10 +139,13 @@ export class ExpandablePanel {
         const title = document.createElement('div');
         title.className = 'cherry-expansion-panel__title';
         title.textContent = label;
+        title.id = `cherry-panel-title-${++panelSequence}`;
+        panel.setAttribute('aria-labelledby', title.id);
 
         const closeBtn = document.createElement('button');
         closeBtn.className = 'cherry-expansion-panel__close';
-        closeBtn.setAttribute('aria-label', 'Close');
+        closeBtn.type = 'button';
+        closeBtn.setAttribute('aria-label', 'Cerrar ajustes');
         closeBtn.innerHTML = '✕';
         closeBtn.addEventListener('click', () => {
             if (typeof onClose === 'function') {
@@ -253,8 +264,10 @@ export class ExpandablePanel {
             return item.element;
         }
 
-        const itemEl = document.createElement('div');
+        const itemEl = document.createElement(item.callback ? 'button' : 'div');
+        if (item.callback) itemEl.type = 'button';
         itemEl.className = 'cherry-expansion-panel__item';
+        if (item.id) itemEl.dataset.control = item.id;
 
         if (item.selected) {
             itemEl.classList.add('selected');
@@ -296,94 +309,8 @@ export class ExpandablePanel {
             });
         }
 
+        nativeService.decorateControls(itemEl);
         return itemEl;
-    }
-
-    /**
-     * Position panel to stay within bounds
-     */
-    _positionPanel(anchorElement, panelElement, containerElement) {
-        // Use requestAnimationFrame to ensure elements are rendered
-        if (typeof requestAnimationFrame === 'function') {
-            requestAnimationFrame(() => {
-                this._calculateAndSetPosition(anchorElement, panelElement, containerElement);
-            });
-        }
-    }
-
-    /**
-     * Calculate optimal panel position
-     */
-    _calculateAndSetPosition(anchorElement, panelElement, containerElement) {
-        const anchorRect = anchorElement.getBoundingClientRect();
-        const containerRect = containerElement.getBoundingClientRect();
-        const panelRect = panelElement.getBoundingClientRect();
-
-        const GAP = 12;
-        const MARGIN = 12;
-
-        // Panel dimensions
-        const panelWidth = panelRect.width || 280;
-        const panelHeight = panelRect.height || 300;
-
-        // Available space
-        const spaceAbove = anchorRect.top - containerRect.top;
-        const spaceBelow = containerRect.bottom - anchorRect.bottom;
-        const spaceLeft = anchorRect.left - containerRect.left;
-        const spaceRight = containerRect.right - anchorRect.right;
-
-        let x, y;
-        let position = 'bottom'; // default
-
-        // Decide vertical position
-        if (spaceBelow >= panelHeight + GAP) {
-            // Below
-            y = anchorRect.bottom - containerRect.top + GAP;
-            position = 'bottom';
-        } else if (spaceAbove >= panelHeight + GAP) {
-            // Above
-            y = anchorRect.top - containerRect.top - panelHeight - GAP;
-            position = 'top';
-        } else {
-            // Center vertically
-            y = Math.max(
-                MARGIN,
-                Math.min(
-                    containerRect.height - panelHeight - MARGIN,
-                    (containerRect.height - panelHeight) / 2
-                )
-            );
-        }
-
-        // Decide horizontal position (prefer right of anchor)
-        const anchorCenterX = anchorRect.left - containerRect.left + anchorRect.width / 2;
-
-        if (spaceRight >= panelWidth + GAP) {
-            // Right side
-            x = anchorRect.right - containerRect.left + GAP;
-        } else if (spaceLeft >= panelWidth + GAP) {
-            // Left side
-            x = anchorRect.left - containerRect.left - panelWidth - GAP;
-        } else {
-            // Center horizontally
-            x = Math.max(
-                MARGIN,
-                Math.min(
-                    containerRect.width - panelWidth - MARGIN,
-                    anchorCenterX - panelWidth / 2
-                )
-            );
-        }
-
-        // Ensure within bounds
-        x = Math.max(MARGIN, Math.min(x, containerRect.width - panelWidth - MARGIN));
-        y = Math.max(MARGIN, Math.min(y, containerRect.height - panelHeight - MARGIN));
-
-        // Apply position
-        panelElement.style.position = 'absolute';
-        panelElement.style.left = `${x}px`;
-        panelElement.style.top = `${y}px`;
-        panelElement.style.transformOrigin = 'center';
     }
 
     /**
@@ -402,26 +329,6 @@ export class ExpandablePanel {
                 panelElement.style.transform = 'scale(1)';
             });
         }
-    }
-
-    /**
-     * Animate panel out
-     */
-    _animateOut(panelElement, callback) {
-        if (!panelElement) {
-            if (typeof callback === 'function') callback();
-            return;
-        }
-
-        panelElement.style.transition = `all ${this.animationDuration}ms cubic-bezier(0.16, 1, 0.3, 1)`;
-        panelElement.style.opacity = '0';
-        panelElement.style.transform = 'scale(0.92)';
-
-        setTimeout(() => {
-            if (typeof callback === 'function') {
-                callback();
-            }
-        }, this.animationDuration);
     }
 
     /**

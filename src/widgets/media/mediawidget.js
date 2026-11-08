@@ -1,4 +1,6 @@
-import { Widget } from "../../core/widgets/Widget.js";
+import { Widget } from "../../core/widgets/widget.js";
+
+import { nativeService } from '../../services/nativeService.js';
 
 export class MediaWidget extends Widget {
 
@@ -255,6 +257,15 @@ export class MediaWidget extends Widget {
     }
 
     this.updateAttributes();
+    const focusedAction = this.element.contains(document.activeElement) ? document.activeElement.dataset.mediaAction : null;
+    const media = nativeService.snapshot?.media;
+    const view = nativeService.isNative ? {
+        title: media?.available ? (media.title || 'Sin título') : 'Sin sesión multimedia',
+        artist: media?.available ? media.artist : (nativeService.error || media?.reason || 'Conectando con Windows…'),
+        artwork: media?.artwork, playing: media?.playing || false,
+        progress: media?.durationSeconds > 0 ? Math.min(100, media.positionSeconds / media.durationSeconds * 100) : 0
+    } : this.state;
+    this.element.dataset.mediaSource = nativeService.mode;
 
     this.element.innerHTML = "";
 
@@ -266,7 +277,7 @@ export class MediaWidget extends Widget {
     );
 
     backdrop.style.backgroundImage =
-        `url("${this.state.artwork}")`;
+        view.artwork ? `url("${view.artwork}")` : 'none';
 
     this.element.appendChild(backdrop);
 
@@ -287,7 +298,7 @@ export class MediaWidget extends Widget {
        ARTWORK
        ================================================= */
 
-    if (this.settings.showArtwork) {
+    if (this.settings.showArtwork && view.artwork) {
 
         const artwork =
             document.createElement("img");
@@ -297,13 +308,13 @@ export class MediaWidget extends Widget {
         );
 
         artwork.src =
-            this.state.artwork;
+            view.artwork;
 
         artwork.alt =
             "Album artwork";
 
         artwork.dataset.artwork =
-            this.state.artwork;
+            view.artwork;
 
         this.element.appendChild(
             artwork
@@ -331,7 +342,7 @@ export class MediaWidget extends Widget {
     );
 
     title.textContent =
-        this.state.title;
+        view.title;
 
 
     const artist =
@@ -342,9 +353,13 @@ export class MediaWidget extends Widget {
     );
 
     artist.textContent =
-        this.state.artist;
+        view.artist;
 
 
+    const badge = document.createElement('span');
+    badge.className = 'cherry-provider-badge';
+    badge.textContent = { demo: 'Demo', live: nativeService.snapshot?.provider === 'windows' ? 'Windows' : 'Sin proveedor', connecting: 'Conectando…', offline: 'Sin conexión' }[nativeService.mode];
+    info.appendChild(badge);
     info.appendChild(title);
     info.appendChild(artist);
 
@@ -355,7 +370,7 @@ export class MediaWidget extends Widget {
        PROGRESS
        ================================================= */
 
-    if (this.settings.showProgress) {
+    if (this.settings.showProgress && (!nativeService.isNative || (media?.available && media.durationSeconds > 0 && media.positionSeconds !== null))) {
 
         const progressContainer =
             document.createElement("div");
@@ -373,7 +388,7 @@ export class MediaWidget extends Widget {
         );
 
         progress.style.width =
-            `${this.state.progress}%`;
+            `${view.progress}%`;
 
 
         progressContainer.appendChild(
@@ -405,15 +420,19 @@ export class MediaWidget extends Widget {
 
         previous.textContent =
             "◀";
+        previous.type = 'button';
+        previous.setAttribute('aria-label', 'Pista anterior');
 
 
         const play =
             document.createElement("button");
 
         play.textContent =
-            this.state.playing
+            view.playing
                 ? "❚❚"
                 : "▶";
+        play.type = 'button';
+        play.setAttribute('aria-label', view.playing ? 'Pausar' : 'Reproducir');
 
 
         const next =
@@ -421,8 +440,20 @@ export class MediaWidget extends Widget {
 
         next.textContent =
             "▶";
+        next.type = 'button';
+        next.setAttribute('aria-label', 'Pista siguiente');
 
 
+        for (const [button, action] of [[previous, 'previous'], [play, 'playPause'], [next, 'next']]) {
+            button.dataset.mediaAction = action;
+            button.disabled = nativeService.isNative ? (!media?.available || !media.controls[action]) : action !== 'playPause';
+            button.setAttribute('aria-busy', String(nativeService.mediaPending));
+            button.setAttribute('aria-disabled', String(button.disabled || nativeService.mediaPending));
+            button.addEventListener('click', () => {
+                if (!nativeService.isNative) { this.togglePlay(); return; }
+                nativeService.mediaAction(action).catch(error => nativeService.onError?.(error.message));
+            });
+        }
         controls.appendChild(
             previous
         );
@@ -449,6 +480,10 @@ export class MediaWidget extends Widget {
     this.element.appendChild(
         content
     );
+    if (focusedAction) {
+        const button = Array.from(this.element.querySelectorAll('[data-media-action]')).find(node => node.dataset.mediaAction === focusedAction);
+        if (button && !button.disabled) button.focus({ preventScroll: true });
+    }
 }
 
 

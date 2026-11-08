@@ -1,4 +1,4 @@
-import { Widget } from "../../core/widgets/Widget.js";
+import { Widget } from "../../core/widgets/widget.js";
 
 export class ClockWidget extends Widget {
     constructor(config = {}) {

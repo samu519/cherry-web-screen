@@ -29,8 +29,7 @@
     box-sizing: border-box;
 }
 
-html,
-body {
+html {
     margin: 0;
     padding: 0;
     width: 100%;
@@ -38,11 +37,28 @@ body {
 }
 
 body {
+    display: flow-root;
+    position: relative;
+    width: var(--cherry-canvas-width, 480px);
+    height: var(--cherry-canvas-height, 1920px);
+    min-height: 0;
+    margin: 0 auto;
+    padding: 0;
+    overflow: clip;
+    zoom: var(--cherry-display-scale, 1);
     font-family: var(--cherry-font-family);
 
     background: var(--cherry-background);
 
     color: var(--cherry-text-primary);
+}
+
+/* The editor uses the desktop viewport; display mode keeps physical screen dimensions. */
+body:has(#cherry-editor) {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    zoom: 1;
 }
 
 

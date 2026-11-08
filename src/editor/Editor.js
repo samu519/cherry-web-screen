@@ -10,15 +10,10 @@ import { SnapManager } from './managers/SnapManager.js';
 import { CanvasAdapter } from './CanvasAdapter.js';
 import { EditorHistory } from './managers/EditorHistory.js';
 import { LongPressManager } from '../core/interaction/LongPressManager.js';
+import { widgetRegistry } from '../core/widgets/widgetRegistry.js';
+import { restoreLayout } from '../core/storage/layoutRuntime.js';
+import { WIDGET_CATALOG, canonicalWidgetType } from '../core/widgets/widgetCatalog.js';
 
-import { ClockWidget } from '../widgets/clock/ClockWidget.js';
-import { MediaWidget } from '../widgets/media/mediawidget.js';
-import { SystemWidget } from '../widgets/system/systemwidget.js';
-import { ControlsWidget } from '../widgets/controls/controlswidget.js';
-import { TextWidget } from '../widgets/text/textwidget.js';
-import { ToggleWidget } from '../widgets/controls/togglewidget.js';
-import { SliderWidget } from '../widgets/controls/sliderwidget.js';
-import { MediaVisualWidget } from '../widgets/visual/mediavisualwidget.js';
 
 export class Editor {
 
@@ -44,7 +39,7 @@ export class Editor {
            MANAGERS
            ------------------------------------------------- */
 
-        this.overlayManager = new OverlayManager(document.body);
+        this.overlayManager = null;
         this.selectionManager = new SelectionManager(this.state, this.canvasElement);
         this.snapManager = new SnapManager(this.state, 12);
         this.canvasAdapter = new CanvasAdapter(this.canvas, this.state);
@@ -97,7 +92,7 @@ export class Editor {
         this.canvasAdapter = new CanvasAdapter(this.canvas, this.state);
 
         this.longPressManager = new LongPressManager({
-            root: this.canvasViewport || document.body,
+            root: this.editorContainer,
             overlayManager: this.overlayManager,
             threshold: 500,
             onOpen: ({ target, title, actions }) => {
@@ -473,6 +468,7 @@ export class Editor {
             this.canvasElement.style.transition = 'transform 0.15s ease';
 
             if (this.canvasGrid) {
+                this.canvasElement.dataset.gridVisible = String(this.state.gridVisible);
                 this.canvasGrid.style.display = this.state.gridVisible ? 'block' : 'none';
             }
 
@@ -529,17 +525,7 @@ export class Editor {
        ===================================================== */
 
     captureCanvasState() {
-        return this.canvas.widgets.map(widget => ({
-            id: widget.id,
-            type: widget.type,
-            size: widget.size,
-            variant: widget.variant,
-            style: widget.style,
-            layout: { ...widget.layout },
-            geometry: { ...widget.geometry },
-            settings: { ...widget.settings },
-            state: { ...widget.state }
-        }));
+        return this.canvas.widgets.map(widget => widgetRegistry.serialize(widget));
     }
 
     recordHistory(description = 'Cambio del editor') {
@@ -549,128 +535,52 @@ export class Editor {
     }
 
     restoreCanvasState(snapshot = []) {
-        if (!Array.isArray(snapshot) || snapshot.length === 0) return;
-
-        const snapshotMap = new Map(snapshot.map(item => [item.id, item]));
-
-        this.canvas.widgets.forEach(widget => {
-            if (!snapshotMap.has(widget.id)) {
-                this.canvas.removeWidget(widget);
-            }
-        });
-
-        snapshot.forEach(saved => {
-            const existing = this.canvas.widgets.find(widget => widget.id === saved.id);
-
-            if (existing) {
-                existing.size = saved.size;
-                existing.variant = saved.variant;
-                existing.style = saved.style;
-                existing.layout = { ...saved.layout };
-                existing.settings = { ...saved.settings };
-                existing.state = { ...saved.state };
-                if (typeof existing.setSize === 'function') {
-                    existing.setSize(saved.size);
-                }
-                if (typeof existing.setVariant === 'function') {
-                    existing.setVariant(saved.variant);
-                }
-                if (typeof existing.setStyle === 'function') {
-                    existing.setStyle(saved.style);
-                }
-                existing.setGeometry({ ...saved.geometry });
-                if (existing.element) {
-                    existing.render();
-                }
-                return;
-            }
-
-            const widget = this.createWidgetFromType(saved.type, {
-                id: saved.id,
-                size: saved.size,
-                variant: saved.variant,
-                style: saved.style,
-                layout: { ...saved.layout },
-                settings: { ...saved.settings },
-                state: { ...saved.state }
-            });
-
-            if (widget) {
-                this.canvas.addWidget(widget);
-            }
-        });
-
+        if (!Array.isArray(snapshot)) return;
+        const document = window.cherryApp.getDocument();
+        document.widgets = snapshot;
+        for (const widget of this.canvas.widgets) this.longPressManager.unregister(widget.element);
+        restoreLayout(this.canvas, document);
+        this.selectionManager.clearSelection();
         this.selectionManager.updateHandlePositions();
+        window.cherryApp.saveLayout();
     }
 
     createWidgetFromType(type, config = {}) {
-        const widgetName = String(type || '').toLowerCase();
-
-        const factoryMap = {
-            clock: () => new ClockWidget({ ...config, size: config.size || 'medium', style: config.style || 'onlyclock', variant: config.variant || 'translucid' }),
-            media: () => new MediaWidget({ ...config, size: config.size || 'large', style: config.style || 'artworkProtagonist', variant: config.variant || 'translucid' }),
-            system: () => new SystemWidget({ ...config, size: config.size || 'cardhorizontal', style: config.style || 'circular', variant: config.variant || 'translucid' }),
-            controls: () => new ControlsWidget({ ...config, size: config.size || 'medium', style: config.style || 'buttons', variant: config.variant || 'translucid' }),
-            text: () => new TextWidget({ ...config, size: config.size || 'small', style: config.style || 'default', variant: config.variant || 'translucid' }),
-            toggle: () => new ToggleWidget({ ...config, size: config.size || 'small', style: config.style || 'widget', variant: config.variant || 'translucid' }),
-            slider: () => new SliderWidget({ ...config, size: config.size || 'mini', style: config.style || 'bar', variant: config.variant || 'translucid' }),
-            mediavisual: () => new MediaVisualWidget({ ...config, size: config.size || 'medium', style: config.style || 'visualizer', variant: config.variant || 'translucid' }),
-            mediavisual: () => new MediaVisualWidget({ ...config, size: config.size || 'medium', style: config.style || 'visualizer', variant: config.variant || 'translucid' })
-        };
-
-        const factory = factoryMap[widgetName];
-        if (!factory) {
-            console.warn(`Widget type no soportado: ${type}`);
-            return null;
-        }
-
-        return factory();
+        return widgetRegistry.create({ ...config, type });
     }
 
-    findAvailableLayoutSlot() {
-        const occupied = this.canvas.widgets.map(widget => ({
-            column: widget.layout.column ?? 0,
-            row: widget.layout.row ?? 0,
-            columns: widget.layout.columns ?? 1,
-            rows: widget.layout.rows ?? 1
-        }));
-
-        for (let row = 0; row < this.canvas.grid.rows; row++) {
-            for (let column = 0; column < this.canvas.grid.columns; column++) {
-                const overlaps = occupied.some(item => {
-                    const endCol = item.column + item.columns;
-                    const endRow = item.row + item.rows;
-                    const targetEndCol = column + 1;
-                    const targetEndRow = row + 1;
-                    return column < endCol && targetEndCol > item.column && row < endRow && targetEndRow > item.row;
-                });
-
-                if (!overlaps) {
-                    return { column, row, columns: 1, rows: 1 };
-                }
+    findAvailableLayoutSlot(columns = 1, rows = 1) {
+        columns = Math.min(columns, this.canvas.grid.columns);
+        rows = Math.min(rows, this.canvas.grid.rows);
+        const occupied = this.canvas.widgets.filter(widget => !widget.flags?.hidden)
+            .map(widget => this.canvas.grid.getLayoutFromGeometry(widget.geometry));
+        for (let row = 0; row <= this.canvas.grid.rows - rows; row++) {
+            for (let column = 0; column <= this.canvas.grid.columns - columns; column++) {
+                if (!occupied.some(item => column < item.column + item.columns && column + columns > item.column &&
+                    row < item.row + item.rows && row + rows > item.row)) return { column, row, columns, rows };
             }
         }
-
-        return { column: 0, row: 0, columns: 1, rows: 1 };
+        return null;
     }
 
     addWidgetFromLibrary(type) {
-        const widget = this.createWidgetFromType(type, {
-            layout: this.findAvailableLayoutSlot()
-        });
-
-        if (!widget) return null;
-
+        const widget = this.createWidgetFromType(type);
+        const slot = this.findAvailableLayoutSlot(widget.layout.columns, widget.layout.rows);
+        if (!slot && this.canvas.layoutMode === 'grid') {
+            widget.destroy();
+            window.cherryApp.notify('No hay espacio libre para ese tamaño. Reduce o elimina un widget, o usa modo libre.', true);
+            return null;
+        }
+        widget.layout = { ...widget.layout, ...(slot || { column: 0, row: 0 }) };
         this.canvas.addWidget(widget);
-        this.recordHistory(`Añadido ${type}`);
+        widgetRegistry.applyFlags(widget);
+        this.recordHistory('Añadido ' + type);
         this.state.selectWidget(widget.id, false);
-
+        window.cherryApp.saveLayout();
         return widget;
     }
 
-    /* =====================================================
-       CREAR WIDGET LIBRARY
-       ===================================================== */
+    /* Widget library */
 
     createWidgetLibrary() {
 
@@ -698,7 +608,8 @@ export class Editor {
 
         widgetTypes.forEach(widget => {
 
-            const card = document.createElement('div');
+            const card = document.createElement('button');
+            card.type = 'button';
             card.className = 'cherry-widget-card';
             card.draggable = true;
             card.dataset.widgetType = widget.name;
@@ -738,12 +649,13 @@ export class Editor {
             const row = Math.max(0, Math.min(this.canvas.grid.rows - 1, Math.floor(offsetY / (this.canvas.grid.getRowHeight() + this.canvas.grid.gap))));
 
             const widget = this.createWidgetFromType(widgetType, {
-                layout: { column, row, columns: 1, rows: 1 }
+                layout: { column, row }
             });
 
             if (!widget) return;
 
             this.canvas.addWidget(widget);
+            window.cherryApp.saveLayout();
             this.recordHistory(`Añadido ${widgetType} desde drag & drop`);
             this.state.selectWidget(widget.id, false);
         });
@@ -887,6 +799,12 @@ export class Editor {
         toolbar.appendChild(navGroup);
         toolbar.appendChild(viewGroup);
         toolbar.appendChild(zoomGroup);
+        const layoutButton = document.createElement('button');
+        layoutButton.type = 'button'; layoutButton.className = 'cherry-toolbar__button';
+        layoutButton.textContent = 'Diseño'; layoutButton.title = 'Perfiles, layouts y archivos';
+        layoutButton.style.width = 'auto'; layoutButton.style.padding = '0 12px';
+        layoutButton.addEventListener('click', () => window.cherryApp.openLayouts(layoutButton));
+        toolbar.appendChild(layoutButton);
 
         // Event listeners
         gridToggle.addEventListener('click', () => {
@@ -992,15 +910,15 @@ export class Editor {
             const step = e.shiftKey ? 12 : 1;
             let dx = 0, dy = 0;
 
-            if (e.key === 'ArrowUp') dy = -step;
-            if (e.key === 'ArrowDown') dy = step;
-            if (e.key === 'ArrowLeft') dx = -step;
-            if (e.key === 'ArrowRight') dx = step;
+            if (e.key === 'ArrowUp') dy = this.canvas.layoutMode === 'grid' ? -(this.canvas.grid.getRowHeight() + this.canvas.grid.gap) : -step;
+            if (e.key === 'ArrowDown') dy = this.canvas.layoutMode === 'grid' ? this.canvas.grid.getRowHeight() + this.canvas.grid.gap : step;
+            if (e.key === 'ArrowLeft') dx = this.canvas.layoutMode === 'grid' ? -(this.canvas.grid.getColumnWidth() + this.canvas.grid.gap) : -step;
+            if (e.key === 'ArrowRight') dx = this.canvas.layoutMode === 'grid' ? this.canvas.grid.getColumnWidth() + this.canvas.grid.gap : step;
 
             this.state.selectedWidgets.forEach(id => {
 
                 const w = this.canvasAdapter.getWidget(id);
-                if (!w) return;
+                if (!w || w.flags?.locked) return;
 
                 const maxX = Math.max(0, this.canvas.width - w.geometry.width);
                 const maxY = Math.max(0, this.canvas.height - w.geometry.height);
@@ -1076,7 +994,7 @@ export class Editor {
             const widget = e.target.closest('.cherry-widget');
             const isMenuButton = e.target.closest('.cherry-widget-menu-button');
 
-            if (widget && !isMenuButton && e.button === 0) {
+            if (widget && !isMenuButton && widget.dataset.locked !== 'true' && e.button === 0 && !e.target.closest('button, input, select, textarea')) {
 
                 const widgetId = widget.dataset.widgetId;
 
@@ -1117,8 +1035,8 @@ export class Editor {
 
             if (this.isDragging && this.dragGroupStartGeometry && this.dragGroupStartGeometry.size > 0) {
 
-                const dx = e.clientX - this.dragStartPos.x;
-                const dy = e.clientY - this.dragStartPos.y;
+                const dx = (e.clientX - this.dragStartPos.x) / this.state.zoom;
+                const dy = (e.clientY - this.dragStartPos.y) / this.state.zoom;
 
                 // El widget "líder" (el que originó el drag) es quien decide el snap
                 const leaderStart = this.dragGroupStartGeometry.get(this.draggedWidgetId);
@@ -1169,8 +1087,8 @@ export class Editor {
             if (this.isResizing && this.resizedWidgetId && this.resizeStartGeometry) {
                 const widget = this.canvasAdapter.getWidget(this.resizedWidgetId);
                 if (widget) {
-                    const dx = e.clientX - this.resizeStartPos.x;
-                    const dy = e.clientY - this.resizeStartPos.y;
+                    const dx = (e.clientX - this.resizeStartPos.x) / this.state.zoom;
+                    const dy = (e.clientY - this.resizeStartPos.y) / this.state.zoom;
                     const start = this.resizeStartGeometry;
                     let next = { ...start };
 
@@ -1288,7 +1206,7 @@ export class Editor {
         // Resize handles
         this._onDocument('mousedown', (e) => {
 
-            if (e.target.classList.contains('cherry-resize-handle')) {
+            if (e.target.classList.contains('cherry-resize-handle') && !this.canvasAdapter.getWidget(e.target.dataset.widgetId)?.flags?.locked) {
                 this.isResizing = true;
                 this.resizedWidgetId = e.target.dataset.widgetId;
                 this.resizeDirection = e.target.dataset.direction || '';
@@ -1316,6 +1234,8 @@ export class Editor {
             }
 
             const widgetId = widgetEl.dataset.widgetId;
+            widgetEl.tabIndex = 0;
+            widgetEl.setAttribute('aria-label', 'Acciones del widget: Alt+flecha abajo');
             const widgetObject = this.canvasAdapter?.getWidget(widgetId);
             const actions = this.getWidgetContextActions(widgetId, widgetObject).map((action) => ({
                 ...action,
@@ -1430,13 +1350,13 @@ export class Editor {
             { label: 'Traer al frente', action: 'bringFront' },
             { label: 'Enviar atrás', action: 'sendBack' },
             { divider: true },
-            { label: 'Bloquear', action: 'lock' },
+            { label: 'Bloquear / desbloquear', action: 'lock' },
             { label: 'Ocultar', action: 'hide' }
         ];
 
         if (widgetObject) {
             const sizeOptions = widgetObject.sizePresets ? Object.keys(widgetObject.sizePresets) : ['mini', 'small', 'medium', 'large'];
-            const styleOptions = widgetObject.styles ? Object.keys(widgetObject.styles) : ['default', 'widget', 'bar', 'buttons'];
+            const styleOptions = widgetObject.styles ? Object.keys(widgetObject.styles) : WIDGET_CATALOG[canonicalWidgetType(widgetObject.type)].styles;
             const variantOptions = ['translucid', 'solid', 'glass'];
 
             actions.push({ divider: true });
@@ -1474,42 +1394,39 @@ export class Editor {
         switch (action) {
 
             case 'delete':
-                widget.remove();
-                this.canvas.widgets = this.canvas.widgets.filter(item => item.id !== widgetId);
-                this.state.clearSelection();
-                this.recordHistory('Eliminar widget');
                 this.deleteWidgets([widgetId]);
-                break;
+                return;
 
-            case 'duplicate':
-                const config = this.canvasAdapter.duplicateWidget(widgetId);
-                if (config) {
-                    const clone = widget.cloneNode(true);
-                    clone.dataset.widgetId = config.id;
-                    clone.style.transform = 'translateX(16px) translateY(16px)';
-                    this.canvasElement.appendChild(clone);
-                    this.recordHistory('Duplicar widget');
-                }
+            case 'duplicate': {
+                const clone = this.canvasAdapter.duplicateWidget(widgetId);
+                if (clone) { this.recordHistory('Duplicar widget'); this.state.selectWidget(clone.id, false); }
                 break;
+            }
 
             case 'bringFront':
                 this.canvasAdapter.bringToFront(widgetId);
+                this.recordHistory('Orden del widget');
                 break;
 
             case 'sendBack':
                 this.canvasAdapter.sendToBack(widgetId);
+                this.recordHistory('Orden del widget');
                 break;
 
-            case 'lock':
-                widget.classList.add('cherry-widget--locked');
-                widget.dataset.locked = 'true';
+            case 'lock': {
+                const instance = this.canvasAdapter.getWidget(widgetId);
+                instance.flags.locked = !instance.flags.locked;
+                widgetRegistry.applyFlags(instance);
+                this.recordHistory('Bloqueo de widget');
                 break;
-
-            case 'hide':
-                widget.classList.add('cherry-widget--hidden');
-                widget.style.display = 'none';
-                this.state.clearSelection();
+            }
+            case 'hide': {
+                const instance = this.canvasAdapter.getWidget(widgetId);
+                instance.flags.hidden = !instance.flags.hidden;
+                widgetRegistry.applyFlags(instance);
+                this.state.clearSelection(); this.recordHistory('Visibilidad de widget');
                 break;
+            }
 
             case 'size':
                 if (value) {
@@ -1538,6 +1455,7 @@ export class Editor {
             default:
                 console.log(`Action ${action} not implemented`);
         }
+        window.cherryApp.saveLayout();
     }
 
     deleteWidgets(widgetIds = []) {
@@ -1545,9 +1463,8 @@ export class Editor {
         if (!widgetIds.length) return;
 
         widgetIds.forEach(id => {
-            const element = document.querySelector(`[data-widget-id="${id}"]`);
-            if (element) element.remove();
-            this.canvas.widgets = this.canvas.widgets.filter(item => item.id !== id);
+            const instance = this.canvasAdapter.getWidget(id);
+            if (instance) { this.longPressManager.unregister(instance.element); this.canvas.removeWidget(instance); }
         });
 
         this.state.clearSelection();
@@ -1569,20 +1486,9 @@ export class Editor {
        ===================================================== */
 
     togglePreviewMode() {
-
-        this.state.setMode(this.state.mode === 'edit' ? 'preview' : 'edit');
-
-        if (this.state.mode === 'preview') {
-            this.editorContainer.classList.add('cherry-editor--preview');
-        } else {
-            this.editorContainer.classList.remove('cherry-editor--preview');
-        }
+        const finished = this.exitEditor();
+        Promise.resolve(finished).then(() => window.cherryApp.setDisplayMode(true));
     }
-
-
-    /* =====================================================
-       CREAR CONTROLES DE PROPIEDADES
-       ===================================================== */
 
     createColorControl(label, value, onChange) {
 
@@ -1691,6 +1597,14 @@ export class Editor {
     exitEditor() {
         console.log('✓ Exiting editor...');
 
+        this.longPressObserver?.disconnect();
+        this.longPressManager?.destroy();
+        this.canvasElement.querySelectorAll('.cherry-widget').forEach(element => {
+            delete element.dataset.longPressRegistered;
+            element.removeAttribute('tabindex');
+            element.removeAttribute('aria-label');
+        });
+
         // Limpiar overlays
         this.overlayManager.closeAll();
 
@@ -1737,7 +1651,7 @@ export class Editor {
 
         // Llamar callback de salida
         if (window.cherryApp && window.cherryApp.exitEditor) {
-            window.cherryApp.exitEditor();
+            return window.cherryApp.exitEditor();
         }
     }
 }

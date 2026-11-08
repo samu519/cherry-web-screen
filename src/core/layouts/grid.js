@@ -165,4 +165,19 @@ export class Grid {
                 this.getHeight(rows)
         };
     }
+
+    constrainGeometry(rect) {
+        const width = Math.min(this.width, Math.max(1, rect.width));
+        const height = Math.min(this.height, Math.max(1, rect.height));
+        return { width, height, x: Math.min(this.width - width, Math.max(0, rect.x)),
+            y: Math.min(this.height - height, Math.max(0, rect.y)) };
+    }
+
+    getLayoutFromGeometry(rect) {
+        const columns = Math.min(this.columns, Math.max(1, Math.round((rect.width + this.gap) / (this.getColumnWidth() + this.gap))));
+        const rows = Math.min(this.rows, Math.max(1, Math.round((rect.height + this.gap) / (this.getRowHeight() + this.gap))));
+        return { columns, rows,
+            column: Math.max(0, Math.min(this.columns - columns, Math.round((rect.x - this.padding) / (this.getColumnWidth() + this.gap)))),
+            row: Math.max(0, Math.min(this.rows - rows, Math.round((rect.y - this.padding) / (this.getRowHeight() + this.gap)))) };
+    }
 }

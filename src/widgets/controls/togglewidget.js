@@ -1,5 +1,7 @@
-import { Widget } from "../../core/widgets/Widget.js";
+import { Widget } from "../../core/widgets/widget.js";
+import { nativeService } from '../../services/nativeService.js';
 import { appState } from "../../core/state/appState.js";
+import { setControlIcon } from '../../core/interaction/controlIcon.js';
 
 
 export class ToggleWidget extends Widget {
@@ -44,13 +46,13 @@ export class ToggleWidget extends Widget {
         this.control = {
 
             id:
-                config.id ?? "wifi",
+                config.control?.id ?? config.controlId ?? config.id ?? "wifi",
 
             label:
-                config.label ?? "Wi-Fi",
+                config.control?.label ?? config.label ?? "Wi-Fi",
 
             value:
-                config.value ?? false
+                config.control?.value ?? config.value ?? false
 
         };
 
@@ -310,6 +312,7 @@ export class ToggleWidget extends Widget {
             );
 
         if (button) {
+            button.setAttribute('aria-pressed', String(isActive));
             button.classList.toggle(
                 "active",
                 isActive
@@ -323,6 +326,11 @@ export class ToggleWidget extends Widget {
         const currentState = appState.get(this.control.id);
         const current = currentState !== undefined ? Boolean(currentState) : Boolean(this.control.value);
         const newValue = !current;
+
+        if (nativeService.isSystemControl(this.control.id)) {
+            nativeService.requestFromUI(this.control.id, newValue);
+            return;
+        }
 
         this.control.value = newValue;
         appState.set(
@@ -382,6 +390,8 @@ export class ToggleWidget extends Widget {
         button.type =
             "button";
 
+        button.setAttribute('aria-label', this.control.label);
+
         button.classList.add(
             "cherry-toggle-button"
         );
@@ -419,6 +429,7 @@ export class ToggleWidget extends Widget {
             this.getControlIcon(
                 this.control.id
             );
+        setControlIcon(icon, this.control.id);
 
 
         // =====================================================

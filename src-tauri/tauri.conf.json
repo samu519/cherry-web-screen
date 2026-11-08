@@ -1,26 +1,30 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
 
-  "productName": "cherry-web-screen",
+  "productName": "Cherry Web Screen",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.cherry.webscreen",
 
   "build": {
-    "frontendDist": ".."
+    "beforeDevCommand": "npm run native:prepare",
+    "beforeBuildCommand": "npm run native:prepare",
+    "frontendDist": "../dist"
   },
 
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "Cherry Screen",
-        "width": 800,
-        "height": 600,
+        "width": 480,
+        "height": 1920,
+        "preventOverflow": true,
         "resizable": true,
         "fullscreen": false
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; media-src 'self' data: blob: https: http:; connect-src 'self' ipc: http://ipc.localhost; font-src 'self' data:"
     }
   },
 

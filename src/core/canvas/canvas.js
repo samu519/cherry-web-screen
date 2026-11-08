@@ -4,6 +4,7 @@
    ========================================================= */
 
 import { Grid } from "../layouts/grid.js";
+import { fitDisplayViewport } from './displayViewport.js';
 
 
 export class Canvas {
@@ -51,6 +52,9 @@ export class Canvas {
            ------------------------------------------------- */
 
         this.widgets = [];
+        this.layoutMode = 'freeform';
+        this.profile = { id: 'cherry-portrait', name: 'Cherry · 480 × 1920', width: this.width, height: this.height,
+            columns: this.grid.columns, rows: this.grid.rows, gap: this.grid.gap, padding: this.grid.padding };
 
 
         /* -------------------------------------------------
@@ -72,6 +76,7 @@ export class Canvas {
 
 
         this.setup();
+        this.stopViewportFit = fitDisplayViewport(this.width, this.height);
     }
 
 
@@ -80,6 +85,12 @@ export class Canvas {
        ===================================================== */
 
     setup() {
+
+        document.documentElement.style.setProperty('--cherry-canvas-width', `${this.width}px`);
+        document.documentElement.style.setProperty('--cherry-canvas-height', `${this.height}px`);
+        this.element.style.setProperty('--cherry-column-step', `${this.grid.getColumnWidth() + this.grid.gap}px`);
+        this.element.style.setProperty('--cherry-row-step', `${this.grid.getRowHeight() + this.grid.gap}px`);
+        this.element.style.setProperty('--cherry-grid-padding', `${this.grid.padding}px`);
 
         this.element.style.width =
             `${this.width}px`;
@@ -93,7 +104,7 @@ export class Canvas {
        AÑADIR WIDGET
        ===================================================== */
 
-    addWidget(widget) {
+    addWidget(widget, { geometry: savedGeometry = null, render = true } = {}) {
 
         if (!widget.element) {
             widget.createElement();
@@ -104,10 +115,9 @@ export class Canvas {
            CALCULAR GEOMETRÍA
            --------------------------------------------- */
 
-        const geometry =
-            this.grid.getGeometry(
-                widget.layout
-            );
+        const geometry = savedGeometry || this.grid.getGeometry(widget.layout);
+        widget.canvas = this;
+        widget.flags = { hidden: false, locked: false, zIndex: 1, ...widget.flags };
 
 
         /* ---------------------------------------------
@@ -123,7 +133,7 @@ export class Canvas {
            RENDERIZAR
            --------------------------------------------- */
 
-        widget.render();
+        if (render) widget.render();
 
 
         /* ---------------------------------------------
@@ -196,5 +206,23 @@ export class Canvas {
             index,
             1
         );
+    }
+
+    configure(profile, layoutMode = this.layoutMode) {
+        this.profile = { ...profile };
+        this.width = profile.width;
+        this.height = profile.height;
+        this.grid = new Grid(profile);
+        this.layoutMode = layoutMode;
+        this.element.dataset.layoutMode = layoutMode;
+        this.setup();
+        this.stopViewportFit?.();
+        this.stopViewportFit = fitDisplayViewport(this.width, this.height);
+    }
+
+    normalizeGeometry(widget, geometry) {
+        const bounded = this.grid.constrainGeometry(geometry);
+        widget.layout = this.grid.getLayoutFromGeometry(bounded);
+        return this.layoutMode === 'grid' ? this.grid.getGeometry(widget.layout) : bounded;
     }
 }

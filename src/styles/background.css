@@ -165,7 +165,6 @@
    ========================================================= */
 
 #cherry-canvas[data-background-mode="static"]::after {
-    background: var(--cherry-accent);
     animation: none;
 }
 

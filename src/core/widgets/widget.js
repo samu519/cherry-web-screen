@@ -4,6 +4,8 @@
    Clase madre de todos los widgets
    ========================================================= */
 
+import { nativeService } from '../../services/nativeService.js';
+
 export class Widget {
 
     constructor(config = {}) {
@@ -96,6 +98,11 @@ export class Widget {
            ------------------------------------------------- */
 
         this.element = null;
+        this.unsubscribeNative = nativeService.subscribe(() => {
+            if (this.element && (this.type === 'system' || this.type === 'media')) this.render();
+            nativeService.decorateControls(this.element, this.control?.id);
+            nativeService.decorateControls(this.expansionManager?.panel?.panelElement);
+        });
     }
 
 
@@ -133,6 +140,9 @@ export class Widget {
         this.element =
             element;
 
+        this.nativeObserver = new MutationObserver(() => nativeService.decorateControls(element, this.control?.id));
+        this.nativeObserver.observe(element, { childList: true, subtree: true });
+
         return element;
     }
 
@@ -148,6 +158,8 @@ export class Widget {
             ...this.geometry,
             ...geometry
         };
+
+        if (this.canvas) this.geometry = this.canvas.normalizeGeometry(this, this.geometry);
 
         this.applyGeometry();
     }
@@ -301,6 +313,9 @@ export class Widget {
        ===================================================== */
 
     destroy() {
+
+        this.unsubscribeNative?.();
+        this.nativeObserver?.disconnect();
 
         if (this.element) {
 

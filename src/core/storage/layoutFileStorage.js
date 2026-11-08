@@ -205,7 +205,7 @@ export async function writeLayoutFile(layoutState) {
         const alreadyGranted = await checkPermissionSilently(handle, 'readwrite');
         console.log('[Cherry Storage] permiso ya concedido (silencioso):', alreadyGranted);
 
-        const ok = alreadyGranted || await requestPermission(handle, 'readwrite');
+        const ok = alreadyGranted;
         console.log('[Cherry Storage] permiso final:', ok);
 
         if (!ok) {

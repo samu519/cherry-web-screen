@@ -1,6 +1,8 @@
-import { Widget } from "../../core/widgets/Widget.js";
+import { nativeService } from '../../services/nativeService.js';
+import { Widget } from "../../core/widgets/widget.js";
 import { ExpansionManager } from "../../core/interaction/ExpansionManager.js";
 import { appState } from "../../core/state/appState.js";
+import { setControlIcon } from '../../core/interaction/controlIcon.js';
 
 export class ControlsWidget extends Widget {
 
@@ -267,7 +269,7 @@ export class ControlsWidget extends Widget {
 
         this.expansionManager =
             new ExpansionManager({
-                root: element,
+                root: document.getElementById('cherry-canvas') || document.body,
                 threshold: 500,
                 animationDuration: 250
             });
@@ -562,7 +564,7 @@ render() {
 
     this.expansionManager =
         new ExpansionManager({
-            root: document.body,
+            root: document.getElementById('cherry-canvas') || document.body,
             threshold: 500,
             animationDuration: 250
         });
@@ -1058,6 +1060,9 @@ getExpansionConfig(control) {
                 ? Boolean(val)
                 : Boolean(control.value);
 
+        element.setAttribute('aria-label', control.label);
+        element.setAttribute('aria-pressed', String(isActive));
+
         if (isActive) {
             element.classList.add("active");
             element.dataset.active = "true";
@@ -1081,6 +1086,7 @@ getExpansionConfig(control) {
             this.getControlIcon(
                 control.id
             );
+        setControlIcon(icon, control.id);
 
 
         // =====================================================
@@ -1154,7 +1160,8 @@ getExpansionConfig(control) {
                     if (typeof expansionConfig.onAction === "function") {
                         expansionConfig.onAction(action, newValue);
                     } else if (newValue !== undefined) {
-                        appState.set(control.id, newValue, this.id);
+                        if (nativeService.isSystemControl(control.id)) nativeService.requestFromUI(control.id, newValue);
+                        else appState.set(control.id, newValue, this.id);
                     }
                 }
             });
@@ -1213,8 +1220,8 @@ getExpansionConfig(control) {
         const newValue =
             !currentBool;
 
-        control.value =
-            newValue;
+        if (nativeService.isSystemControl(control.id)) { nativeService.requestFromUI(control.id, newValue); return; }
+        control.value = newValue;
 
         appState.set(
             control.id,
@@ -1291,6 +1298,7 @@ getExpansionConfig(control) {
             this.getControlIcon(
                 control.id
             );
+        setControlIcon(icon, control.id);
 
 
         // =====================================================
@@ -1361,6 +1369,8 @@ getExpansionConfig(control) {
         range.type =
             "range";
 
+        range.setAttribute('aria-label', control.label);
+
 
         range.classList.add(
             "cherry-control-range"
@@ -1382,7 +1392,12 @@ getExpansionConfig(control) {
         range.addEventListener(
             "input",
             event => {
-
+                const requested = Number(event.target.value);
+                if (nativeService.isSystemControl(control.id)) {
+                    range.value = control.value ?? 0;
+                    nativeService.requestFromUI(control.id, requested);
+                    return;
+                }
                 control.value =
                     Number(
                         event.target.value
@@ -1391,13 +1406,11 @@ getExpansionConfig(control) {
 
                 value.textContent =
                     `${control.value}%`;
+                appState.set(control.id, requested, this.id);
 
             }
         );
 
-        sliderInput.addEventListener("input", (e) => {
-            appState.set(control.id, Number(e.target.value), this.id);
-        });
 
 
         // =====================================================
@@ -1460,6 +1473,7 @@ getExpansionConfig(control) {
             this.getControlIcon(
                 control.id
             );
+        setControlIcon(icon, control.id);
 
 
         const label =
@@ -1617,8 +1631,8 @@ getExpansionConfig(control) {
             const newValue =
                 !currentBool;
 
-            control.value =
-                newValue;
+            if (nativeService.isSystemControl(control.id)) { nativeService.requestFromUI(control.id, newValue); return; }
+            control.value = newValue;
 
             appState.set(
                 control.id,
@@ -1661,8 +1675,17 @@ getExpansionConfig(control) {
             );
 
         if (btn) {
+            const range = btn.querySelector('input[type="range"]');
+            if (range) {
+                range.value = value ?? 0;
+                const display = btn.querySelector('.cherry-control-value');
+                if (display) display.textContent = value == null ? '—' : value + '%';
+                return;
+            }
             const isActive =
                 Boolean(value);
+
+            if (btn.tagName === 'BUTTON') btn.setAttribute('aria-pressed', String(isActive));
 
             btn.classList.toggle(
                 "active",
@@ -1698,6 +1721,11 @@ getExpansionConfig(control) {
         }
 
         this.state.controls.forEach(control => {
+            const current = appState.get(control.id);
+            if (current !== undefined) {
+                control.value = current;
+                this.updateControlState(control.id, current);
+            }
             const unsub = appState.subscribe(
                 control.id,
                 (data) => {
@@ -1814,6 +1842,8 @@ getExpansionConfig(control) {
                 input.type =
                     "range";
 
+                input.setAttribute('aria-label', control.label);
+
                 input.min =
                     control.min ?? 0;
 
@@ -1831,6 +1861,11 @@ getExpansionConfig(control) {
 
                 input.addEventListener("input", (e) => {
                     const newVal = Number(e.target.value);
+                    if (nativeService.isSystemControl(control.id)) {
+                        input.value = control.value ?? 0;
+                        nativeService.requestFromUI(control.id, newVal);
+                        return;
+                    }
                     valSpan.textContent = `${newVal}%`;
                     control.value = newVal;
                     appState.set(control.id, newVal, this.id);
@@ -1838,6 +1873,9 @@ getExpansionConfig(control) {
 
                 sliderItem.appendChild(topRow);
                 sliderItem.appendChild(input);
+                sliderItem.dataset.control = control.id;
+                valSpan.classList.add('cherry-control-value');
+                nativeService.decorateControls(sliderItem);
 
                 return {
                     element: sliderItem
@@ -1854,9 +1892,9 @@ getExpansionConfig(control) {
                 id: control.id,
                 label: control.label,
                 icon,
-                secondary,
+                secondary: nativeService.control(control.id)?.reason || secondary,
                 selected: isToggle ? Boolean(val) : false,
-                callback: () => {
+                callback: nativeService.isSystemControl(control.id) && !nativeService.control(control.id)?.writable ? undefined : () => {
                     if (isToggle) {
                         this.toggleHiddenControl(control.id);
                     } else if (control.type === "action" && typeof control.action === "function") {

@@ -118,7 +118,7 @@
     min-height: 1px;
 }
 
-#cherry-canvas {
+#cherry-editor #cherry-canvas {
     position: relative;
     background: var(--cherry-white);
     border: 1px solid var(--cherry-gray-200);
@@ -510,7 +510,7 @@
    CONTEXT MENU
    --------------------------------------------------------- */
 
-.cherry-overlay {
+.cherry-overlay:not(.cherry-overlay--expansion):not(.cherry-overlay--context) {
     background: var(--cherry-surface);
     border-radius: var(--cherry-radius-small);
     box-shadow: var(--cherry-shadow-large);
@@ -521,7 +521,7 @@
     z-index: 9999;
 }
 
-.cherry-overlay.visible {
+.cherry-overlay:not(.cherry-overlay--expansion):not(.cherry-overlay--context).visible {
     opacity: 1;
     transform: scale(1) translateY(0);
 }
@@ -616,12 +616,12 @@
     border-color: var(--cherry-accent);
 }
 
-[data-theme="dark"] .cherry-overlay {
+[data-theme="dark"] .cherry-overlay:not(.cherry-overlay--expansion):not(.cherry-overlay--context) {
     background: var(--cherry-gray-800);
     border-color: var(--cherry-gray-700);
 }
 
-[data-theme="dark"] #cherry-canvas {
+[data-theme="dark"] #cherry-editor #cherry-canvas {
     background: var(--cherry-gray-900);
     border-color: var(--cherry-gray-700);
 }
@@ -765,7 +765,7 @@
     animation: fadeIn 300ms ease-out;
 }
 
-.cherry-overlay {
+.cherry-overlay:not(.cherry-overlay--expansion):not(.cherry-overlay--context) {
     animation: slideInUp 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 

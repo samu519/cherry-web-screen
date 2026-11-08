@@ -2,7 +2,8 @@
 // CHERRY — SLIDER WIDGET
 // =========================================================
 
-import { Widget } from "../../core/widgets/Widget.js";
+import { Widget } from "../../core/widgets/widget.js";
+import { nativeService } from '../../services/nativeService.js';
 import { appState } from "../../core/state/appState.js";
 
 
@@ -385,6 +386,12 @@ export class SliderWidget extends Widget {
                 value
             );
 
+        if (nativeService.isSystemControl(this.control.id)) {
+            this.updateUI();
+            nativeService.requestFromUI(this.control.id, newValue);
+            return true;
+        }
+
 
         // -----------------------------------------------------
         // IGNORE UNCHANGED VALUE
@@ -434,20 +441,7 @@ export class SliderWidget extends Widget {
 
         );
 
-        console.log(
-    "SLIDER ENVÍA:",
-    {
-        widget: this.id,
-        control: this.control.id,
-        value: newValue
-    }
-);
 
-appState.set(
-    this.control.id,
-    newValue,
-    this.id
-);
 
 
         return true;
@@ -469,6 +463,8 @@ appState.set(
 
         range.type =
             "range";
+
+        range.setAttribute('aria-label', this.control.label);
 
 
         range.classList.add(
@@ -818,6 +814,8 @@ renderBar() {
 
     range.type =
         "range";
+
+    range.setAttribute('aria-label', this.control.label);
 
     range.classList.add(
         "cherry-slider-range"
